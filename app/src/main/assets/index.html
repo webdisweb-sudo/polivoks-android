@@ -2,997 +2,963 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <title>ПОЛИВОКС</title>
 <style>
-:root {
-  --body-bg:   #2c2c2a;
-  --panel-bg:  #3a3835;
-  --plate-bg:  #d4c89a;
-  --plate-txt: #1a1814;
-  --plate-border: #b0a070;
-  --knob-body: #222;
-  --knob-ring: #555;
-  --knob-mark: #e8e0c8;
-  --sw-on:     #c0392b;
-  --sw-off:    #444;
-  --led-on:    #ff3300;
-  --led-off:   #2a0a0a;
-  --key-w:     #ddd5b8;
-  --key-b:     #181614;
-  --accent:    #c0392b;
-  --text-plate:#1a1814;
-  --screw:     #888;
+:root{
+  --body:#1e1e1a;
+  --panel:#2d2e28;
+  --panel2:#34352e;
+  --border:#4a4a38;
+  --yellow:#c8b840;
+  --red:#c0392b;
+  --red2:#e74c3c;
+  --white:#e8e0c8;
+  --dim:#7a7860;
+  --knob:#1a1a16;
+  --knob-hi:#3a3a30;
+  --knob-mark:#ffffff;
+  --led-on:#ff2200;
+  --led-off:#200808;
+  --sw-on:#8b0000;
+  --sw-track:#111;
+  --key-w:#ddd5b0;
+  --key-b:#181612;
 }
-* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; touch-action:manipulation; user-select:none; }
-html,body { background:var(--body-bg); font-family:'Courier New',monospace; overflow-x:hidden; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
+html,body{background:var(--body);font-family:'Courier New',monospace;color:var(--white);overflow-x:hidden}
 
-/* ── КОРПУС ── */
-.synth {
-  max-width:480px; margin:0 auto;
-  background: linear-gradient(180deg,#3a3835 0%,#2e2c29 100%);
-  border:2px solid #1a1814;
-  min-height:100vh;
-  position:relative;
-}
+/* ═══ КОРПУС ═══ */
+.synth{max-width:480px;margin:0 auto;background:var(--panel);min-height:100vh;border-left:2px solid #111;border-right:2px solid #111}
 
-/* ── ШАПКА ── */
-.top-bar {
-  background:linear-gradient(180deg,#1a1814 0%,#2a2620 100%);
-  padding:8px 12px 6px;
-  display:flex; align-items:center; justify-content:space-between;
-  border-bottom:3px solid #111;
+/* ═══ ВЕРХНЯЯ ПОЛОСА ═══ */
+.topbar{
+  background:#111;padding:0;
+  display:flex;align-items:stretch;
+  border-bottom:3px solid #000;
 }
-.logo-block { display:flex; flex-direction:column; }
-.logo-main {
-  font-size:26px; font-weight:900; letter-spacing:8px;
-  color:#d4c89a; text-transform:uppercase;
-  font-family:'Courier New',monospace;
-  text-shadow:0 0 12px rgba(212,200,154,0.3);
+.logo-area{
+  flex:1;padding:10px 14px;
+  background:linear-gradient(135deg,#1a1a14 0%,#0e0e0a 100%);
 }
-.logo-main em { color:var(--accent); font-style:normal; }
-.logo-sub { font-size:8px; letter-spacing:3px; color:#5a5040; margin-top:1px; }
-.factory-badge {
-  font-size:8px; letter-spacing:1px; color:#3a3020;
-  background:#d4c89a; padding:3px 6px; border-radius:2px;
-  text-align:center; line-height:1.4;
+.logo-main{
+  font-size:30px;font-weight:900;letter-spacing:10px;
+  color:var(--white);font-family:'Courier New',monospace;
+  text-shadow:0 0 20px rgba(232,224,200,0.2);
+  line-height:1;
 }
+.logo-main b{color:var(--red2)}
+.logo-sub{font-size:7px;letter-spacing:3px;color:var(--dim);margin-top:3px}
+.logo-badge{
+  padding:8px 12px;background:#0a0a08;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  border-left:1px solid #222;
+}
+.power-sw{
+  width:52px;height:26px;background:var(--sw-track);border:1px solid #333;
+  border-radius:13px;position:relative;cursor:pointer;transition:background .2s;
+}
+.power-sw.on{background:#3a0000;border-color:var(--red);box-shadow:0 0 10px rgba(192,57,43,.4)}
+.power-sw::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:20px;height:20px;border-radius:50%;
+  background:#333;transition:all .2s;
+}
+.power-sw.on::after{left:28px;background:var(--red);box-shadow:0 0 8px var(--red)}
+.power-lbl{font-size:7px;letter-spacing:2px;color:var(--dim)}
 
-/* ── POWER ── */
-.power-row {
-  display:flex; align-items:center; gap:8px;
-  padding:6px 12px;
-  background:#222;
-  border-bottom:1px solid #111;
+/* ═══ AUDIO RESUME ═══ */
+.resume-bar{
+  display:none;background:#1a0000;border-bottom:1px solid var(--red);
+  padding:6px 12px;text-align:center;cursor:pointer;
+  font-size:10px;letter-spacing:2px;color:var(--red);
 }
-.power-toggle {
-  width:48px; height:24px;
-  background:#1a0a0a; border:1px solid #444; border-radius:12px;
-  position:relative; cursor:pointer; transition:background 0.2s;
-}
-.power-toggle.on { background:#3a0808; border-color:var(--accent); box-shadow:0 0 8px rgba(192,57,43,0.5); }
-.power-toggle::after {
-  content:''; position:absolute; top:2px; left:2px;
-  width:18px; height:18px; border-radius:50%;
-  background:#444; transition:all 0.2s;
-}
-.power-toggle.on::after { left:26px; background:var(--accent); box-shadow:0 0 6px var(--accent); }
-.power-label { font-size:9px; letter-spacing:2px; color:#5a5040; }
-.audio-resume-btn {
-  margin-left:auto; padding:4px 10px;
-  background:#1a0a0a; border:1px solid #c0392b; border-radius:3px;
-  color:#c0392b; font-size:9px; letter-spacing:1px; cursor:pointer;
-  display:none;
-}
-.audio-resume-btn.show { display:block; }
+.resume-bar.show{display:block}
 
-/* ── СЕКЦИИ (платы) ── */
-.sections { padding:8px; display:flex; flex-direction:column; gap:6px; }
+/* ═══ ПАНЕЛЬ УПРАВЛЕНИЯ ═══ */
+.panel{padding:8px;display:flex;flex-direction:column;gap:6px}
 
-.plate {
-  background:var(--plate-bg);
-  border:1px solid var(--plate-border);
-  border-radius:3px;
-  padding:8px 8px 10px;
-  position:relative;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5);
+/* ═══ СЕКЦИЯ ═══ */
+.sec{
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-top:2px solid var(--yellow);
+  position:relative;padding:8px 8px 10px;
 }
-.plate-title {
-  font-size:9px; font-weight:700; letter-spacing:3px;
-  color:var(--text-plate); text-transform:uppercase;
-  margin-bottom:8px; border-bottom:1px solid var(--plate-border);
-  padding-bottom:3px; display:flex; justify-content:space-between;
+.sec-title{
+  font-size:9px;font-weight:700;letter-spacing:4px;
+  color:var(--yellow);text-transform:uppercase;
+  margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline;
 }
-.plate-title .ru { font-weight:400; letter-spacing:1px; font-size:8px; color:#5a4a30; }
+.sec-title small{font-size:7px;letter-spacing:1px;color:var(--dim);font-weight:400}
 
-/* ── СКРЮ ── */
-.screws { position:absolute; }
-.screw {
-  width:8px; height:8px; border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#aaa,#666);
-  position:absolute; box-shadow:inset 0 1px 1px rgba(0,0,0,0.5);
-}
-.screw::after {
-  content:''; position:absolute; top:50%; left:50%;
-  transform:translate(-50%,-50%) rotate(45deg);
-  width:5px; height:1px; background:#444;
-}
-.plate .screw-tl { top:4px; left:4px; }
-.plate .screw-tr { top:4px; right:4px; }
+/* ═══ СЕТКА ═══ */
+.row{display:flex;gap:8px;align-items:flex-end}
+.col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.col-label{font-size:7px;letter-spacing:1.5px;color:var(--dim);text-align:center;text-transform:uppercase;line-height:1.3}
+.col-label b{display:block;color:var(--white);font-size:8px;letter-spacing:2px;font-weight:400}
 
-/* ── РЯДЫ КОНТРОЛОВ ── */
-.ctrl-row { display:flex; gap:6px; align-items:flex-end; flex-wrap:wrap; }
-.ctrl { display:flex; flex-direction:column; align-items:center; gap:3px; flex:1; min-width:44px; }
-.ctrl-label { font-size:7px; letter-spacing:1px; color:var(--text-plate); text-align:center; text-transform:uppercase; line-height:1.2; }
-.ctrl-label small { font-size:6px; color:#7a6040; display:block; }
-
-/* ── РУЧКА (потенциометр) ── */
-.knob-wrap { position:relative; }
-.knob {
-  width:44px; height:44px; border-radius:50%; cursor:pointer;
-  background:radial-gradient(circle at 38% 32%, #4a4540, #1a1814);
-  border:2px solid #555;
-  box-shadow:0 3px 6px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.1);
-  position:relative;
+/* ═══ ПОТЕНЦИОМЕТР (советский стиль) ═══ */
+.knob-outer{
+  position:relative;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
 }
-.knob.small { width:34px; height:34px; }
-.knob.large { width:54px; height:54px; }
-.knob-mark {
-  position:absolute; width:2px; height:40%; background:var(--knob-mark);
-  left:50%; top:8%; transform-origin:bottom center;
-  border-radius:1px;
+.knob-outer.sz-s{width:46px;height:46px}
+.knob-outer.sz-m{width:58px;height:58px}
+.knob-outer.sz-l{width:70px;height:70px}
+.knob-body{
+  width:100%;height:100%;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,#4a4a40 0%,var(--knob) 65%);
+  border:2px solid #111;
+  box-shadow:0 4px 10px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06),0 0 0 1px #2a2a22;
+  position:relative;overflow:hidden;
 }
-/* Насечки по периметру */
-.knob-ring {
-  position:absolute; inset:-6px; border-radius:50%;
-  border:1px solid transparent;
+/* Насечки по ободу */
+.knob-body::before{
+  content:'';position:absolute;inset:2px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.04);
+}
+.knob-line{
+  position:absolute;width:2px;border-radius:1px;
+  background:var(--knob-mark);
+  left:50%;top:12%;height:28%;
+  transform-origin:bottom center;
+  box-shadow:0 0 3px rgba(255,255,255,.5);
+}
+.knob-val{
+  font-size:7px;color:var(--yellow);text-align:center;
+  min-width:28px;letter-spacing:0;
 }
 
-/* ── ТУМБЛЕР ── */
-.toggle-wrap { display:flex; flex-direction:column; align-items:center; gap:2px; }
-.toggle {
-  width:22px; height:40px;
-  background:linear-gradient(180deg,#2a2620,#1a1614);
-  border:1px solid #555; border-radius:4px;
-  position:relative; cursor:pointer;
-  box-shadow:0 2px 4px rgba(0,0,0,0.6);
+/* ═══ ТУМБЛЕР ═══ */
+.tgl-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+.tgl{
+  width:24px;height:44px;
+  background:linear-gradient(180deg,#1a1a14,#0e0e0a);
+  border:1px solid #444;border-radius:4px;
+  position:relative;cursor:pointer;
+  box-shadow:0 3px 6px rgba(0,0,0,.7);
 }
-.toggle-lever {
-  width:16px; height:16px;
-  background:radial-gradient(circle at 40% 35%,#7a7060,#3a3428);
-  border:1px solid #888; border-radius:3px;
-  position:absolute; left:2px; transition:top 0.1s;
-  box-shadow:0 2px 3px rgba(0,0,0,0.5);
+.tgl-lever{
+  width:18px;height:18px;
+  background:radial-gradient(circle at 40% 35%,#888,#444);
+  border:1px solid #666;border-radius:3px;
+  position:absolute;left:2px;
+  box-shadow:0 2px 4px rgba(0,0,0,.6);
+  transition:top .1s;
 }
-.toggle-opts { font-size:6px; color:#7a6040; text-align:center; line-height:1.6; }
-.toggle-opt-top { position:absolute; top:2px; left:0; right:0; text-align:center; font-size:6px; color:#5a4a30; }
-.toggle-opt-bot { position:absolute; bottom:2px; left:0; right:0; text-align:center; font-size:6px; color:#5a4a30; }
+.tgl-top{position:absolute;top:2px;left:0;right:0;text-align:center;font-size:6px;color:var(--dim)}
+.tgl-bot{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:6px;color:var(--dim)}
 
-/* ── LED ── */
-.led {
-  width:8px; height:8px; border-radius:50%;
+/* ═══ LED ═══ */
+.led{
+  width:8px;height:8px;border-radius:50%;
   background:var(--led-off);
-  box-shadow:inset 0 1px 2px rgba(0,0,0,0.8);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.8);
+  flex-shrink:0;
 }
-.led.on { background:var(--led-on); box-shadow:0 0 8px var(--led-on),0 0 3px var(--led-on); }
+.led.on{background:var(--led-on);box-shadow:0 0 8px var(--led-on),0 0 2px var(--led-on)}
 
-/* ── КНОПКА-ПЕРЕКЛЮЧАТЕЛЬ ── */
-.btn-sw {
-  padding:4px 6px; background:#2a2620; border:1px solid #555;
-  border-radius:2px; cursor:pointer; font-size:7px; letter-spacing:1px;
-  color:#9a9080; text-transform:uppercase; transition:all 0.1s;
-  text-align:center;
+/* ═══ КНОПКА-ПЕРЕКЛЮЧАТЕЛЬ ═══ */
+.sw{
+  padding:5px 7px;background:#111;border:1px solid #333;
+  border-radius:2px;cursor:pointer;font-size:8px;letter-spacing:1px;
+  color:var(--dim);text-align:center;transition:all .1s;white-space:nowrap;
 }
-.btn-sw.on { background:#3a0808; border-color:var(--accent); color:var(--accent); box-shadow:0 0 6px rgba(192,57,43,0.4); }
+.sw.on{background:#3a0000;border-color:var(--red);color:var(--red2);box-shadow:0 0 6px rgba(192,57,43,.3)}
+.sw:active{opacity:.7}
 
-/* ── КЛАВИАТУРА ── */
-.keyboard-section {
-  background:#1a1814; border-top:3px solid #111; padding:8px;
-}
-.keyboard-controls {
-  display:flex; align-items:center; gap:8px; margin-bottom:6px;
-}
-.oct-btn {
-  padding:4px 8px; background:#2a2420; border:1px solid #555;
-  border-radius:2px; color:#9a9080; font-family:monospace; font-size:10px;
-  cursor:pointer;
-}
-.oct-btn:active { background:var(--accent); color:#fff; }
-.oct-display { color:#d4c89a; font-size:11px; min-width:20px; text-align:center; }
-.panic-btn {
-  margin-left:auto; padding:4px 10px;
-  background:#2a0808; border:1px solid var(--accent); border-radius:2px;
-  color:var(--accent); font-family:monospace; font-size:9px;
-  letter-spacing:1px; cursor:pointer;
-}
-.panic-btn:active { background:var(--accent); color:#fff; }
+/* ═══ СЕТКА ГЕНЕРАТОРОВ ═══ */
+.osc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 
-.keyboard {
-  position:relative; height:80px; overflow-x:auto;
-  background:#111; border:1px solid #333; border-radius:2px;
-  display:flex;
+/* ═══ АРП СЕТКА ═══ */
+.arp-steps{display:flex;gap:3px;flex-wrap:wrap;margin-top:6px}
+.arp-step{
+  flex:1;min-width:calc(12.5% - 3px);height:28px;
+  background:#111;border:1px solid #333;border-radius:2px;
+  cursor:pointer;position:relative;transition:all .1s;
 }
-.key-w {
-  width:32px; height:80px; flex-shrink:0;
-  background:linear-gradient(180deg,var(--key-w) 0%,#c8c0a8 100%);
-  border-right:1px solid #888; border-bottom:2px solid #999;
-  cursor:pointer; position:relative; border-radius:0 0 3px 3px;
-  transition:background 0.04s;
-}
-.key-w:active,.key-w.pressed { background:#d4850a; }
-.key-w .note-lbl { position:absolute; bottom:4px; left:0; right:0; text-align:center; font-size:7px; color:#888; }
-.key-b {
-  width:20px; height:50px; flex-shrink:0;
-  background:linear-gradient(180deg,#2a2420 0%,var(--key-b) 100%);
-  border:1px solid #111; border-radius:0 0 3px 3px;
-  cursor:pointer; position:absolute; z-index:2;
-  transition:background 0.04s;
-}
-.key-b:active,.key-b.pressed { background:#8b0000; }
+.arp-step.on{background:#2a0000;border-color:var(--red);box-shadow:0 0 4px rgba(192,57,43,.4)}
+.arp-step.play{box-shadow:0 0 10px var(--led-on)!important;border-color:var(--led-on)!important}
+.arp-step-n{position:absolute;bottom:1px;right:3px;font-size:6px;color:#333}
 
-/* ── СТАТУС ── */
-.status-bar {
-  background:#111; padding:4px 10px;
-  display:flex; gap:10px; font-size:9px; color:#5a5040;
-  border-top:1px solid #222;
+/* ═══ КЛАВИАТУРА ═══ */
+.kb-section{background:#111;border-top:2px solid #000;padding:8px}
+.kb-controls{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.oct-btn{
+  padding:5px 10px;background:#1a1a14;border:1px solid #444;
+  border-radius:2px;color:var(--dim);font-family:monospace;font-size:10px;cursor:pointer;
 }
-.status-bar span b { color:#d4850a; }
+.oct-btn:active{background:var(--red);color:#fff;border-color:var(--red)}
+.oct-num{color:var(--yellow);font-size:12px;min-width:18px;text-align:center}
+.panic{
+  margin-left:auto;padding:5px 12px;
+  background:#1a0000;border:1px solid var(--red);border-radius:2px;
+  color:var(--red);font-family:monospace;font-size:9px;letter-spacing:2px;cursor:pointer;
+}
+.panic:active{background:var(--red);color:#fff}
 
-/* ── DISABLE OVERLAY ── */
-.synth.off .sections { opacity:.3; pointer-events:none; filter:saturate(0.1); }
-.synth.off .keyboard-section { opacity:.3; pointer-events:none; }
+.keyboard{position:relative;height:76px;overflow-x:auto;display:flex;background:#0a0a08;border:1px solid #222;border-radius:2px}
+.kw{
+  width:30px;height:76px;flex-shrink:0;
+  background:linear-gradient(180deg,var(--key-w) 0%,#c0b898 100%);
+  border-right:1px solid #888;border-bottom:2px solid #888;
+  cursor:pointer;border-radius:0 0 3px 3px;position:relative;
+}
+.kw:active,.kw.pr{background:var(--yellow)!important}
+.kw .klbl{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:6px;color:#888}
+.kb{
+  width:18px;height:46px;flex-shrink:0;
+  background:linear-gradient(180deg,#2a2620,var(--key-b));
+  border:1px solid #000;border-radius:0 0 3px 3px;
+  cursor:pointer;position:absolute;z-index:2;
+}
+.kb:active,.kb.pr{background:#8b0000!important}
+
+/* ═══ СТАТУС ═══ */
+.statusbar{background:#080808;padding:4px 10px;display:flex;gap:10px;font-size:9px;color:#444;border-top:1px solid #111}
+.statusbar span b{color:var(--yellow)}
+
+/* ═══ ВЫКЛ СОСТОЯНИЕ ═══ */
+.synth.off .panel,.synth.off .kb-section{opacity:.25;pointer-events:none}
 </style>
 </head>
 <body>
 <div class="synth off" id="synth">
 
 <!-- ШАПКА -->
-<div class="top-bar">
-  <div class="logo-block">
-    <div class="logo-main">ПОЛИ<em>ВОКС</em></div>
-    <div class="logo-sub">ФОРМАНТНЫЙ ЗАВОД · КАЧКАНАР · 1982</div>
+<div class="topbar">
+  <div class="logo-area">
+    <div class="logo-main">ПОЛИ<b>ВОКС</b></div>
+    <div class="logo-sub">ФОРМАНТНЫЙ ЗАВОД · КАЧКАНАР · 1982 · СССР</div>
   </div>
-  <div class="factory-badge">ВЕКТОР<br>СССР</div>
+  <div class="logo-badge">
+    <div class="power-sw" id="pwSw" onclick="togglePower()"></div>
+    <div class="power-lbl">ПИТАНИЕ</div>
+  </div>
 </div>
 
-<!-- ПИТАНИЕ -->
-<div class="power-row">
-  <div class="power-toggle" id="powerToggle" onclick="togglePower()"></div>
-  <span class="power-label">ПИТАНИЕ</span>
-  <button class="audio-resume-btn" id="resumeBtn" onclick="resumeAudio()">▶ ЗВУК</button>
-</div>
+<div class="resume-bar" id="resumeBar" onclick="resumeAudio()">▶ НАЖМИ ДЛЯ ВОССТАНОВЛЕНИЯ ЗВУКА</div>
 
-<!-- СЕКЦИИ ПАНЕЛИ -->
-<div class="sections">
+<!-- ПАНЕЛЬ -->
+<div class="panel">
 
-  <!-- МОДУЛЯТОР (LFO) -->
-  <div class="plate">
-    <div class="screw screw-tl"></div><div class="screw screw-tr"></div>
-    <div class="plate-title">МОДУЛЯТОР <span class="ru">НЧ ГЕНЕРАТОР</span></div>
-    <div class="ctrl-row">
-      <div class="ctrl">
-        <div class="ctrl-label">ЧАСТОТА<small>LFO RATE</small></div>
-        <div class="knob" id="lfoRate" data-min="0" data-max="100" data-val="30" data-param="lfoRate">
-          <div class="knob-mark" id="lfoRateMark"></div>
+  <!-- МОДУЛЯТОР -->
+  <div class="sec">
+    <div class="sec-title">МОДУЛЯТОР <small>НЧ ГЕНЕРАТОР</small></div>
+    <div class="row">
+      <div class="col">
+        <div class="col-label"><b>ЧАСТОТА</b>LFO RATE</div>
+        <div class="knob-outer sz-m" id="kLfoRate" data-min="0" data-max="100" data-val="30" data-p="lfoRate">
+          <div class="knob-body"><div class="knob-line" id="lLfoRate"></div></div>
         </div>
       </div>
-      <div class="ctrl">
-        <div class="ctrl-label">ГЛУБИНА<small>DEPTH</small></div>
-        <div class="knob" id="lfoDepth" data-min="0" data-max="100" data-val="20" data-param="lfoDepth">
-          <div class="knob-mark" id="lfoDepthMark"></div>
+      <div class="col">
+        <div class="col-label"><b>ГЛУБИНА</b>DEPTH</div>
+        <div class="knob-outer sz-m" id="kLfoDepth" data-min="0" data-max="100" data-val="20" data-p="lfoDepth">
+          <div class="knob-body"><div class="knob-line" id="lLfoDepth"></div></div>
         </div>
       </div>
-      <div class="ctrl" style="flex:none;min-width:64px">
-        <div class="ctrl-label">ФОРМА<small>WAVEFORM</small></div>
-        <div style="display:flex;gap:4px;margin-top:2px">
-          <div class="btn-sw on" id="lfoSine" onclick="setLfoWave('sine',this)">∿</div>
-          <div class="btn-sw" id="lfoSquare" onclick="setLfoWave('square',this)">⊓</div>
-          <div class="btn-sw" id="lfoSaw" onclick="setLfoWave('sawtooth',this)">/|</div>
+      <div class="col" style="flex:none;min-width:70px">
+        <div class="col-label" style="margin-bottom:4px"><b>ФОРМА</b></div>
+        <div style="display:flex;gap:3px">
+          <div class="sw on" id="swLfoSin" onclick="setLfoWave('sine',this)">∿</div>
+          <div class="sw" id="swLfoSq" onclick="setLfoWave('square',this)">⊓</div>
+          <div class="sw" id="swLfoSaw" onclick="setLfoWave('sawtooth',this)">/|</div>
         </div>
-      </div>
-      <div class="ctrl" style="flex:none;min-width:56px">
-        <div class="ctrl-label">МАРШРУТ<small>ROUTE</small></div>
-        <div style="display:flex;flex-direction:column;gap:3px;margin-top:2px">
-          <div class="btn-sw" id="lfoToPitch" onclick="toggleLfo('Pitch')">ВЧ</div>
-          <div class="btn-sw on" id="lfoToFilter" onclick="toggleLfo('Filter')">ФЛТ</div>
-          <div class="btn-sw" id="lfoToAmp" onclick="toggleLfo('Amp')">УПО</div>
+        <div class="col-label" style="margin-top:6px;margin-bottom:4px"><b>МАРШРУТ</b></div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div class="sw" id="swLfoPitch" onclick="toggleLfoTo('Pitch')">ВЧ</div>
+          <div class="sw on" id="swLfoFilter" onclick="toggleLfoTo('Filter')">ФЛТ</div>
+          <div class="sw" id="swLfoAmp" onclick="toggleLfoTo('Amp')">УПО</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ГЕНЕРАТОРЫ -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-
-    <!-- ГЕНЕРАТОР 1 -->
-    <div class="plate">
-      <div class="screw screw-tl"></div><div class="screw screw-tr"></div>
-      <div class="plate-title">ГГ-1 <span class="ru">ГЕНЕРАТОР</span></div>
-      <div class="ctrl-row" style="gap:4px">
-        <div class="ctrl">
-          <div class="ctrl-label">СТРОЙ</div>
-          <div class="knob small" id="osc1Tune" data-min="-24" data-max="24" data-val="0" data-param="osc1Tune">
-            <div class="knob-mark" id="osc1TuneMark"></div>
+  <div class="osc-grid">
+    <div class="sec">
+      <div class="sec-title">ГГ-1 <small>ГЕНЕРАТОР</small></div>
+      <div class="row">
+        <div class="col">
+          <div class="col-label"><b>СТРОЙ</b></div>
+          <div class="knob-outer sz-s" id="kO1Tune" data-min="-24" data-max="24" data-val="0" data-p="osc1Tune">
+            <div class="knob-body"><div class="knob-line" id="lO1Tune"></div></div>
           </div>
         </div>
-        <div class="ctrl">
-          <div class="ctrl-label">ДЕТЮН</div>
-          <div class="knob small" id="osc1Fine" data-min="-50" data-max="50" data-val="0" data-param="osc1Fine">
-            <div class="knob-mark" id="osc1FineMark"></div>
+        <div class="col">
+          <div class="col-label"><b>ДЕТЮН</b></div>
+          <div class="knob-outer sz-s" id="kO1Fine" data-min="-50" data-max="50" data-val="0" data-p="osc1Fine">
+            <div class="knob-body"><div class="knob-line" id="lO1Fine"></div></div>
           </div>
         </div>
       </div>
-      <div class="ctrl-row" style="margin-top:6px;gap:3px">
-        <div class="ctrl">
-          <div class="ctrl-label" style="font-size:6px">ФОРМА</div>
-          <div style="display:flex;flex-direction:column;gap:2px">
-            <div class="btn-sw on" id="o1saw" onclick="setWave(1,'sawtooth',this)" style="font-size:9px">/|</div>
-            <div class="btn-sw" id="o1sq" onclick="setWave(1,'square',this)" style="font-size:9px">⊓</div>
-            <div class="btn-sw" id="o1tri" onclick="setWave(1,'triangle',this)" style="font-size:9px">∧</div>
-          </div>
+      <div class="row" style="margin-top:8px">
+        <div class="col">
+          <div class="col-label" style="margin-bottom:3px"><b>ФОРМА</b></div>
+          <div class="sw on" id="o1Saw" onclick="setWave(1,'sawtooth',this)" style="width:100%;margin-bottom:2px">/| ПИЛ</div>
+          <div class="sw" id="o1Sq" onclick="setWave(1,'square',this)" style="width:100%;margin-bottom:2px">⊓ МЕА</div>
+          <div class="sw" id="o1Tri" onclick="setWave(1,'triangle',this)" style="width:100%">∧ ТРЕ</div>
         </div>
-        <div class="ctrl">
-          <div class="ctrl-label" style="font-size:6px">ДИАП.</div>
-          <div style="display:flex;flex-direction:column;gap:2px">
-            <div class="btn-sw" id="o1r32" onclick="setRange(1,2,this)" style="font-size:7px">32'</div>
-            <div class="btn-sw on" id="o1r16" onclick="setRange(1,1,this)" style="font-size:7px">16'</div>
-            <div class="btn-sw" id="o1r8" onclick="setRange(1,0,this)" style="font-size:7px">8'</div>
-          </div>
+        <div class="col">
+          <div class="col-label" style="margin-bottom:3px"><b>ДИАП.</b></div>
+          <div class="sw" id="o1r2" onclick="setRange(1,-1,this)" style="width:100%;margin-bottom:2px">4'</div>
+          <div class="sw" id="o1r1" onclick="setRange(1,0,this)" style="width:100%;margin-bottom:2px">8'</div>
+          <div class="sw on" id="o1r0" onclick="setRange(1,1,this)" style="width:100%;margin-bottom:2px">16'</div>
+          <div class="sw" id="o1rm1" onclick="setRange(1,2,this)" style="width:100%">32'</div>
         </div>
       </div>
     </div>
-
-    <!-- ГЕНЕРАТОР 2 -->
-    <div class="plate">
-      <div class="screw screw-tl"></div><div class="screw screw-tr"></div>
-      <div class="plate-title">ГГ-2 <span class="ru">ГЕНЕРАТОР</span></div>
-      <div class="ctrl-row" style="gap:4px">
-        <div class="ctrl">
-          <div class="ctrl-label">СТРОЙ</div>
-          <div class="knob small" id="osc2Tune" data-min="-24" data-max="24" data-val="0" data-param="osc2Tune">
-            <div class="knob-mark" id="osc2TuneMark"></div>
+    <div class="sec">
+      <div class="sec-title">ГГ-2 <small>ГЕНЕРАТОР</small></div>
+      <div class="row">
+        <div class="col">
+          <div class="col-label"><b>СТРОЙ</b></div>
+          <div class="knob-outer sz-s" id="kO2Tune" data-min="-24" data-max="24" data-val="0" data-p="osc2Tune">
+            <div class="knob-body"><div class="knob-line" id="lO2Tune"></div></div>
           </div>
         </div>
-        <div class="ctrl">
-          <div class="ctrl-label">ДЕТЮН</div>
-          <div class="knob small" id="osc2Fine" data-min="-50" data-max="50" data-val="7" data-param="osc2Fine">
-            <div class="knob-mark" id="osc2FineMark"></div>
+        <div class="col">
+          <div class="col-label"><b>ДЕТЮН</b></div>
+          <div class="knob-outer sz-s" id="kO2Fine" data-min="-50" data-max="50" data-val="7" data-p="osc2Fine">
+            <div class="knob-body"><div class="knob-line" id="lO2Fine"></div></div>
           </div>
         </div>
       </div>
-      <div class="ctrl-row" style="margin-top:6px;gap:3px">
-        <div class="ctrl">
-          <div class="ctrl-label" style="font-size:6px">ФОРМА</div>
-          <div style="display:flex;flex-direction:column;gap:2px">
-            <div class="btn-sw on" id="o2saw" onclick="setWave(2,'sawtooth',this)" style="font-size:9px">/|</div>
-            <div class="btn-sw" id="o2sq" onclick="setWave(2,'square',this)" style="font-size:9px">⊓</div>
-            <div class="btn-sw" id="o2tri" onclick="setWave(2,'triangle',this)" style="font-size:9px">∧</div>
-          </div>
+      <div class="row" style="margin-top:8px">
+        <div class="col">
+          <div class="col-label" style="margin-bottom:3px"><b>ФОРМА</b></div>
+          <div class="sw on" id="o2Saw" onclick="setWave(2,'sawtooth',this)" style="width:100%;margin-bottom:2px">/| ПИЛ</div>
+          <div class="sw" id="o2Sq" onclick="setWave(2,'square',this)" style="width:100%;margin-bottom:2px">⊓ МЕА</div>
+          <div class="sw" id="o2Tri" onclick="setWave(2,'triangle',this)" style="width:100%">∧ ТРЕ</div>
         </div>
-        <div class="ctrl">
-          <div class="ctrl-label" style="font-size:6px">ДИАП.</div>
-          <div style="display:flex;flex-direction:column;gap:2px">
-            <div class="btn-sw" id="o2r32" onclick="setRange(2,2,this)" style="font-size:7px">32'</div>
-            <div class="btn-sw on" id="o2r16" onclick="setRange(2,1,this)" style="font-size:7px">16'</div>
-            <div class="btn-sw" id="o2r8" onclick="setRange(2,0,this)" style="font-size:7px">8'</div>
-          </div>
+        <div class="col">
+          <div class="col-label" style="margin-bottom:3px"><b>ДИАП.</b></div>
+          <div class="sw" id="o2r2" onclick="setRange(2,-1,this)" style="width:100%;margin-bottom:2px">4'</div>
+          <div class="sw" id="o2r1" onclick="setRange(2,0,this)" style="width:100%;margin-bottom:2px">8'</div>
+          <div class="sw on" id="o2r0" onclick="setRange(2,1,this)" style="width:100%;margin-bottom:2px">16'</div>
+          <div class="sw" id="o2rm1" onclick="setRange(2,2,this)" style="width:100%">32'</div>
         </div>
       </div>
     </div>
-
-  </div><!-- /grid -->
+  </div>
 
   <!-- МИКШЕР -->
-  <div class="plate">
-    <div class="screw screw-tl"></div><div class="screw screw-tr"></div>
-    <div class="plate-title">МИКШЕР <span class="ru">MIXER</span></div>
-    <div class="ctrl-row">
-      <div class="ctrl">
-        <div class="ctrl-label">ГГ-1</div>
-        <div class="knob small" id="mixOsc1" data-min="0" data-max="100" data-val="80" data-param="mixOsc1">
-          <div class="knob-mark" id="mixOsc1Mark"></div>
+  <div class="sec">
+    <div class="sec-title">МИКШЕР <small>MIXER</small></div>
+    <div class="row">
+      <div class="col">
+        <div class="col-label"><b>ГГ-1</b></div>
+        <div class="knob-outer sz-s" id="kMix1" data-min="0" data-max="100" data-val="80" data-p="mixOsc1">
+          <div class="knob-body"><div class="knob-line" id="lMix1"></div></div>
         </div>
       </div>
-      <div class="ctrl">
-        <div class="ctrl-label">ГГ-2</div>
-        <div class="knob small" id="mixOsc2" data-min="0" data-max="100" data-val="70" data-param="mixOsc2">
-          <div class="knob-mark" id="mixOsc2Mark"></div>
+      <div class="col">
+        <div class="col-label"><b>ГГ-2</b></div>
+        <div class="knob-outer sz-s" id="kMix2" data-min="0" data-max="100" data-val="70" data-p="mixOsc2">
+          <div class="knob-body"><div class="knob-line" id="lMix2"></div></div>
         </div>
       </div>
-      <div class="ctrl">
-        <div class="ctrl-label">ШУМ</div>
-        <div class="knob small" id="mixNoise" data-min="0" data-max="100" data-val="0" data-param="mixNoise">
-          <div class="knob-mark" id="mixNoiseMark"></div>
+      <div class="col">
+        <div class="col-label"><b>ШУМ</b></div>
+        <div class="knob-outer sz-s" id="kNoise" data-min="0" data-max="100" data-val="0" data-p="mixNoise">
+          <div class="knob-body"><div class="knob-line" id="lNoise"></div></div>
         </div>
       </div>
-      <div class="ctrl" style="flex:none;min-width:50px">
-        <div class="ctrl-label">КОЛЬЦО<small>RING MOD</small></div>
-        <div class="btn-sw" id="ringModBtn" onclick="toggleRingMod()" style="margin-top:4px;padding:6px">КМ</div>
-        <div class="led" id="ringLed" style="margin-top:4px"></div>
+      <div class="col" style="flex:none;width:52px">
+        <div class="col-label" style="margin-bottom:6px"><b>КОЛЬЦО</b>RM</div>
+        <div class="sw" id="swRM" onclick="toggleRM()" style="padding:8px 6px">КМ</div>
+        <div class="led" id="ledRM" style="margin-top:6px"></div>
       </div>
     </div>
   </div>
 
   <!-- ФИЛЬТР -->
-  <div class="plate">
-    <div class="screw screw-tl"></div><div class="screw screw-tr"></div>
-    <div class="plate-title">ФИЛЬТР <span class="ru">ФНЧ / ПФ · К140УД12</span></div>
-    <div class="ctrl-row">
-      <div class="ctrl">
-        <div class="ctrl-label">ЧАСТОТА<small>CUTOFF</small></div>
-        <div class="knob large" id="filterCutoff" data-min="0" data-max="100" data-val="60" data-param="filterCutoff">
-          <div class="knob-mark" id="filterCutoffMark"></div>
+  <div class="sec">
+    <div class="sec-title">ФИЛЬТР <small>ФНЧ / ПФ · К140УД12</small></div>
+    <div class="row">
+      <div class="col">
+        <div class="col-label"><b>ЧАСТОТА</b>CUTOFF</div>
+        <div class="knob-outer sz-l" id="kFCut" data-min="0" data-max="100" data-val="60" data-p="filterCutoff">
+          <div class="knob-body"><div class="knob-line" id="lFCut"></div></div>
         </div>
       </div>
-      <div class="ctrl">
-        <div class="ctrl-label">РЕЗОНАНС<small>Q / RESON</small></div>
-        <div class="knob large" id="filterRes" data-min="0" data-max="100" data-val="30" data-param="filterRes">
-          <div class="knob-mark" id="filterResMark"></div>
+      <div class="col">
+        <div class="col-label"><b>РЕЗОНАНС</b>Q / RESON</div>
+        <div class="knob-outer sz-l" id="kFRes" data-min="0" data-max="100" data-val="30" data-p="filterRes">
+          <div class="knob-body"><div class="knob-line" id="lFRes"></div></div>
         </div>
       </div>
-      <div class="ctrl">
-        <div class="ctrl-label">ОГИБАЮЩАЯ<small>ENV AMT</small></div>
-        <div class="knob" id="filterEnv" data-min="-100" data-max="100" data-val="40" data-param="filterEnv">
-          <div class="knob-mark" id="filterEnvMark"></div>
+      <div class="col">
+        <div class="col-label"><b>ОГИБАЮЩАЯ</b>ENV AMT</div>
+        <div class="knob-outer sz-m" id="kFEnv" data-min="-100" data-max="100" data-val="40" data-p="filterEnv">
+          <div class="knob-body"><div class="knob-line" id="lFEnv"></div></div>
         </div>
       </div>
-      <div class="ctrl" style="flex:none;min-width:44px">
-        <div class="ctrl-label">РЕЖИМ<small>MODE</small></div>
-        <div class="toggle" id="filterMode" onclick="toggleFilterMode()" style="margin-top:4px">
-          <div class="toggle-lever" id="filterLever" style="top:2px"></div>
-          <div class="toggle-opt-top">ФНЧ</div>
-          <div class="toggle-opt-bot">ПФ</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- УСИЛИТЕЛЬ + ОГИБАЮЩАЯ -->
-  <div class="plate">
-    <div class="screw screw-tl"></div><div class="screw screw-tr"></div>
-    <div class="plate-title">УСИЛИТЕЛЬ <span class="ru">VCA · ОГИБАЮЩАЯ ADSR</span></div>
-    <div class="ctrl-row">
-      <div class="ctrl">
-        <div class="ctrl-label">А<small>АТАКА</small></div>
-        <div class="knob small" id="envA" data-min="0" data-max="100" data-val="5" data-param="envA">
-          <div class="knob-mark" id="envAMark"></div>
-        </div>
-      </div>
-      <div class="ctrl">
-        <div class="ctrl-label">D<small>СПАД</small></div>
-        <div class="knob small" id="envD" data-min="0" data-max="100" data-val="30" data-param="envD">
-          <div class="knob-mark" id="envDMark"></div>
-        </div>
-      </div>
-      <div class="ctrl">
-        <div class="ctrl-label">S<small>СУСТЕЙН</small></div>
-        <div class="knob small" id="envS" data-min="0" data-max="100" data-val="60" data-param="envS">
-          <div class="knob-mark" id="envSMark"></div>
-        </div>
-      </div>
-      <div class="ctrl">
-        <div class="ctrl-label">R<small>ЗАТУХ</small></div>
-        <div class="knob small" id="envR" data-min="0" data-max="100" data-val="40" data-param="envR">
-          <div class="knob-mark" id="envRMark"></div>
-        </div>
-      </div>
-      <div class="ctrl">
-        <div class="ctrl-label">УРОВЕНЬ<small>VOLUME</small></div>
-        <div class="knob" id="ampVol" data-min="0" data-max="100" data-val="80" data-param="ampVol">
-          <div class="knob-mark" id="ampVolMark"></div>
-        </div>
-      </div>
-      <div class="ctrl" style="flex:none;min-width:40px">
-        <div class="ctrl-label" style="font-size:6px">АВТОГ<small>AUTO</small></div>
-        <div class="toggle" id="autoEnv" onclick="toggleAutoEnv()" style="margin-top:4px">
-          <div class="toggle-lever" id="autoLever" style="top:2px"></div>
-          <div class="toggle-opt-top">ВКЛ</div>
-          <div class="toggle-opt-bot">ВЫК</div>
+      <div class="col" style="flex:none;width:44px">
+        <div class="col-label" style="margin-bottom:6px"><b>РЕЖИМ</b>MODE</div>
+        <div class="tgl" id="tglFMode" onclick="toggleFMode()">
+          <div class="tgl-lever" id="levFMode" style="top:2px"></div>
+          <div class="tgl-top">ФНЧ</div>
+          <div class="tgl-bot">ПФ</div>
         </div>
       </div>
     </div>
   </div>
 
-</div><!-- /sections -->
+  <!-- УСИЛИТЕЛЬ -->
+  <div class="sec">
+    <div class="sec-title">УСИЛИТЕЛЬ <small>VCA · ОГИБАЮЩАЯ ADSR</small></div>
+    <div class="row">
+      <div class="col">
+        <div class="col-label"><b>A</b>АТАКА</div>
+        <div class="knob-outer sz-s" id="kEnvA" data-min="0" data-max="100" data-val="5" data-p="envA">
+          <div class="knob-body"><div class="knob-line" id="lEnvA"></div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label"><b>D</b>СПАД</div>
+        <div class="knob-outer sz-s" id="kEnvD" data-min="0" data-max="100" data-val="30" data-p="envD">
+          <div class="knob-body"><div class="knob-line" id="lEnvD"></div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label"><b>S</b>СУСТЕЙН</div>
+        <div class="knob-outer sz-s" id="kEnvS" data-min="0" data-max="100" data-val="60" data-p="envS">
+          <div class="knob-body"><div class="knob-line" id="lEnvS"></div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label"><b>R</b>ЗАТУХ</div>
+        <div class="knob-outer sz-s" id="kEnvR" data-min="0" data-max="100" data-val="40" data-p="envR">
+          <div class="knob-body"><div class="knob-line" id="lEnvR"></div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label"><b>УРОВЕНЬ</b>VOL</div>
+        <div class="knob-outer sz-m" id="kVol" data-min="0" data-max="100" data-val="80" data-p="ampVol">
+          <div class="knob-body"><div class="knob-line" id="lVol"></div></div>
+        </div>
+      </div>
+      <div class="col" style="flex:none;width:40px">
+        <div class="col-label" style="margin-bottom:6px"><b>АВТОГ</b>AUTO</div>
+        <div class="tgl" id="tglAuto" onclick="toggleAutoEnv()">
+          <div class="tgl-lever" id="levAuto" style="top:22px"></div>
+          <div class="tgl-top">ВКЛ</div>
+          <div class="tgl-bot">ВЫК</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- АРПЕДЖИАТОР -->
+  <div class="sec">
+    <div class="sec-title">АРПЕДЖИАТОР <small>SEQUENCER</small></div>
+    <div class="row" style="align-items:center;flex-wrap:wrap;gap:6px">
+      <div class="col" style="flex:none">
+        <div class="col-label" style="margin-bottom:4px"><b>ПУСК</b></div>
+        <div class="sw" id="swArp" onclick="toggleArp()" style="padding:8px 10px">▶ АРП</div>
+        <div class="led" id="ledArp" style="margin-top:4px"></div>
+      </div>
+      <div class="col">
+        <div class="col-label"><b>ТЕМП</b>BPM</div>
+        <div class="knob-outer sz-s" id="kArpBpm" data-min="40" data-max="220" data-val="120" data-p="arpBpm">
+          <div class="knob-body"><div class="knob-line" id="lArpBpm"></div></div>
+        </div>
+        <div class="knob-val" id="vArpBpm">120</div>
+      </div>
+      <div class="col">
+        <div class="col-label"><b>СКВАЖ</b>GATE</div>
+        <div class="knob-outer sz-s" id="kArpGate" data-min="10" data-max="95" data-val="50" data-p="arpGate">
+          <div class="knob-body"><div class="knob-line" id="lArpGate"></div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label"><b>ОКТАВЫ</b>RANGE</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div class="sw on" id="arpR1" onclick="setArpRange(1,this)">1 ОКТ</div>
+          <div class="sw" id="arpR2" onclick="setArpRange(2,this)">2 ОКТ</div>
+          <div class="sw" id="arpR3" onclick="setArpRange(3,this)">3 ОКТ</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label"><b>РЕЖИМ</b>MODE</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div class="sw on" id="arpMUp" onclick="setArpMode('up',this)">↑ ВВ</div>
+          <div class="sw" id="arpMDn" onclick="setArpMode('down',this)">↓ НИ</div>
+          <div class="sw" id="arpMUD" onclick="setArpMode('updown',this)">↕ ЗИГ</div>
+          <div class="sw" id="arpMRnd" onclick="setArpMode('random',this)">? СЛ</div>
+        </div>
+      </div>
+    </div>
+    <!-- 16 шагов -->
+    <div class="arp-steps" id="arpSteps"></div>
+    <!-- Ноты шагов -->
+    <div style="display:flex;gap:3px;margin-top:4px;flex-wrap:wrap" id="arpNoteRow"></div>
+  </div>
+
+</div><!-- /panel -->
 
 <!-- КЛАВИАТУРА -->
-<div class="keyboard-section">
-  <div class="keyboard-controls">
+<div class="kb-section">
+  <div class="kb-controls">
     <button class="oct-btn" onclick="shiftOct(-1)">−ОКТ</button>
-    <span class="oct-display" id="octDisp">4</span>
+    <span class="oct-num" id="octNum">4</span>
     <button class="oct-btn" onclick="shiftOct(1)">+ОКТ</button>
-    <button class="panic-btn" onclick="panic()">■ СТОП</button>
+    <button class="panic" onclick="panic()">■ СТОП</button>
   </div>
   <div class="keyboard" id="keyboard"></div>
 </div>
 
 <!-- СТАТУС -->
-<div class="status-bar">
-  <span>НОТ: <b id="sbNote">--</b></span>
-  <span>ЧСТ: <b id="sbFreq">--</b> Гц</span>
-  <span>ОКТ: <b id="sbOct">4</b></span>
+<div class="statusbar">
+  <span>НОТ: <b id="sbN">--</b></span>
+  <span>ЧСТ: <b id="sbF">--</b> Гц</span>
+  <span>ОКТ: <b id="sbO">4</b></span>
   <span>ФЛТ: <b id="sbFlt">ФНЧ</b></span>
+  <span>АРП: <b id="sbArp">ВЫК</b></span>
 </div>
 
 </div><!-- /synth -->
-
 <script>
 'use strict';
-// ════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
 // СОСТОЯНИЕ
-// ════════════════════════════════════════════════════════
-const S = {
-  osc1Wave:'sawtooth', osc1Tune:0, osc1Fine:0, osc1Range:1,
-  osc2Wave:'sawtooth', osc2Tune:0, osc2Fine:7, osc2Range:1,
-  mixOsc1:80, mixOsc2:70, mixNoise:0,
-  filterCutoff:60, filterRes:30, filterEnv:40, filterMode:'lp',
-  envA:5, envD:30, envS:60, envR:40,
-  ampVol:80, autoEnv:false,
-  lfoRate:30, lfoDepth:20, lfoWave:'sine',
-  lfoToPitch:false, lfoToFilter:true, lfoToAmp:false,
+// ══════════════════════════════════════════════════
+const S={
+  osc1Wave:'sawtooth',osc1Tune:0,osc1Fine:0,osc1Range:1,
+  osc2Wave:'sawtooth',osc2Tune:0,osc2Fine:7,osc2Range:1,
+  mixOsc1:80,mixOsc2:70,mixNoise:0,
+  filterCutoff:60,filterRes:30,filterEnv:40,filterMode:'lp',
+  envA:5,envD:30,envS:60,envR:40,ampVol:80,autoEnv:false,
+  lfoRate:30,lfoDepth:20,lfoWave:'sine',
+  lfoToPitch:false,lfoToFilter:true,lfoToAmp:false,
   ringMod:false,
+  arpOn:false,arpBpm:120,arpGate:50,arpMode:'up',arpRange:1,
+  arpSteps:Array(16).fill(true),
+  arpNotes:Array(16).fill(60),
 };
 
-let ctx=null, masterGain=null, lfoOsc=null, lfoGain=null;
-let activeNotes={}, powered=false, octave=4;
-let autoEnvInterval=null;
+let ctx=null,masterGain=null,lfoOsc=null,lfoGain=null;
+let activeNotes={},powered=false,octave=4;
+let autoEnvTimer=null,arpTimer=null,arpStep=0,arpHeldNotes=[];
 
-// ════════════════════════════════════════════════════════
-// AUDIO INIT — с защитой от suspended
-// ════════════════════════════════════════════════════════
-function initAudio() {
-  if (ctx) return;
-  ctx = new (window.AudioContext||window.webkitAudioContext)();
-  masterGain = ctx.createGain();
-  masterGain.gain.value = S.ampVol/100*0.85;
+// ══════════════════════════════════════════════════
+// AUDIO
+// ══════════════════════════════════════════════════
+function ensureCtx(){
+  if(ctx) return;
+  ctx=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=ctx.createGain();
+  masterGain.gain.value=S.ampVol/100*.85;
   masterGain.connect(ctx.destination);
-
-  lfoOsc = ctx.createOscillator();
-  lfoGain = ctx.createGain();
-  lfoOsc.type = S.lfoWave;
+  lfoOsc=ctx.createOscillator();
+  lfoGain=ctx.createGain();
+  lfoOsc.type=S.lfoWave;
   updateLfo();
   lfoOsc.connect(lfoGain);
   lfoOsc.start();
-
-  // Следим за состоянием контекста
-  ctx.addEventListener('statechange', onCtxStateChange);
-  onCtxStateChange();
+  ctx.addEventListener('statechange',checkCtxState);
+  checkCtxState();
 }
-
-function onCtxStateChange() {
-  const btn = document.getElementById('resumeBtn');
-  if (ctx && ctx.state === 'suspended') {
-    btn.classList.add('show');
-  } else {
-    btn.classList.remove('show');
-  }
+function checkCtxState(){
+  const b=document.getElementById('resumeBar');
+  b.classList.toggle('show',ctx&&ctx.state==='suspended');
 }
+function resumeAudio(){if(ctx)ctx.resume().then(checkCtxState);}
+// Разбудить при любом касании
+document.addEventListener('touchstart',()=>{if(ctx&&ctx.state==='suspended')ctx.resume();},{passive:true});
 
-function resumeAudio() {
-  if (ctx) ctx.resume().then(() => onCtxStateChange());
+function n2f(m){return 440*Math.pow(2,(m-69)/12);}
+function p2s(v,mn=.002,mx=3){return mn+(v/100)*(mx-mn);}
+function p2hz(v,mn=30,mx=18000){return mn*Math.pow(mx/mn,v/100);}
+
+function polvQ(r){
+  const n=r/100;
+  return n<.75?.5+n*5:5+Math.pow((n-.75)/.25,2.2)*28;
 }
-
-// Разбудить контекст при любом касании
-document.addEventListener('touchstart', () => {
-  if (ctx && ctx.state==='suspended') ctx.resume();
-}, { passive:true });
-
-// ════════════════════════════════════════════════════════
-// ВСПОМОГАТЕЛЬНЫЕ
-// ════════════════════════════════════════════════════════
-function noteToFreq(midi) { return 440*Math.pow(2,(midi-69)/12); }
-function p2s(v,mn=0.002,mx=3) { return mn+(v/100)*(mx-mn); }
-function p2hz(v,mn=30,mx=18000) { return mn*Math.pow(mx/mn,v/100); }
-
-function polivoksQ(res) {
-  const r=res/100;
-  return r<0.75 ? 0.5+r*5 : 5+Math.pow((r-0.75)/0.25,2.2)*28;
+function mkSlew(){
+  const s=ctx.createWaveShaper(),n=512,c=new Float32Array(n);
+  for(let i=0;i<n;i++){const x=(i/(n/2))-1;c[i]=x>=0?Math.tanh(x*3.5)*.85:Math.tanh(x*2.2)*.95;}
+  s.curve=c;s.oversample='4x';return s;
 }
-
-function makeSlewShaper() {
-  const s=ctx.createWaveShaper(), n=512, c=new Float32Array(n);
-  for(let i=0;i<n;i++){
-    const x=(i/(n/2))-1;
-    c[i]=x>=0?Math.tanh(x*3.5)*0.85:Math.tanh(x*2.2)*0.95;
-  }
-  s.curve=c; s.oversample='4x'; return s;
+function mkTrap(){
+  const s=ctx.createWaveShaper(),n=512,c=new Float32Array(n);
+  for(let i=0;i<n;i++){const x=(i/(n/2))-1;c[i]=Math.max(-.85,Math.min(.85,x*8));}
+  s.curve=c;s.oversample='2x';return s;
 }
-function makeTrapShaper() {
-  const s=ctx.createWaveShaper(), n=512, c=new Float32Array(n);
-  for(let i=0;i<n;i++){const x=(i/(n/2))-1; c[i]=Math.max(-0.85,Math.min(0.85,x*8));}
-  s.curve=c; s.oversample='2x'; return s;
-}
-
-function updateLfo() {
-  if (!lfoOsc) return;
+function updateLfo(){
+  if(!lfoOsc)return;
   lfoOsc.type=S.lfoWave;
-  lfoOsc.frequency.value=0.1+(S.lfoRate/100)*19.9;
-  if (lfoGain) lfoGain.gain.value=(S.lfoDepth/100)*900;
-}
-function updateVol() {
-  if (masterGain) masterGain.gain.value=S.ampVol/100*0.85;
+  lfoOsc.frequency.value=.1+(S.lfoRate/100)*19.9;
+  if(lfoGain)lfoGain.gain.value=(S.lfoDepth/100)*900;
 }
 
-// ════════════════════════════════════════════════════════
-// ВОСПРОИЗВЕДЕНИЕ НОТЫ
-// ════════════════════════════════════════════════════════
-function playNote(midi) {
-  if (!ctx) return;
-  if (ctx.state==='suspended') ctx.resume();
-  if (activeNotes[midi]) stopNote(midi);
-
-  const freq=noteToFreq(midi);
-  const now=ctx.currentTime;
-  const rangeOct1=S.osc1Range-1, rangeOct2=S.osc2Range-1;
-
-  // ── Осцилляторы
+function playNote(midi){
+  if(!ctx)return;
+  if(ctx.state==='suspended')ctx.resume();
+  if(activeNotes[midi])stopNote(midi);
+  const freq=n2f(midi),now=ctx.currentTime;
   const o1=ctx.createOscillator();
   o1.type=S.osc1Wave;
-  o1.frequency.value=freq*Math.pow(2,rangeOct1+S.osc1Tune/12+S.osc1Fine/1200);
-
+  o1.frequency.value=freq*Math.pow(2,S.osc1Range+S.osc1Tune/12+S.osc1Fine/1200);
   const o2=ctx.createOscillator();
   o2.type=S.osc2Wave;
-  o2.frequency.value=freq*Math.pow(2,rangeOct2+S.osc2Tune/12+S.osc2Fine/1200);
-
-  // ── Шум
-  const noiseGain=ctx.createGain();
-  noiseGain.gain.value=S.mixNoise/100*0.4;
+  o2.frequency.value=freq*Math.pow(2,S.osc2Range+S.osc2Tune/12+S.osc2Fine/1200);
+  const m1=ctx.createGain();m1.gain.value=S.mixOsc1/100*.5;
+  const m2=ctx.createGain();m2.gain.value=S.mixOsc2/100*.5;
+  // Шум
   let noiseNode=null;
-  if (S.mixNoise>0) {
-    const bufLen=ctx.sampleRate*2;
-    const buf=ctx.createBuffer(1,bufLen,ctx.sampleRate);
-    const d=buf.getChannelData(0);
-    for(let i=0;i<bufLen;i++) d[i]=Math.random()*2-1;
-    noiseNode=ctx.createBufferSource();
-    noiseNode.buffer=buf; noiseNode.loop=true;
-    noiseNode.connect(noiseGain);
-    noiseNode.start(now);
+  const noiseG=ctx.createGain();noiseG.gain.value=S.mixNoise/100*.4;
+  if(S.mixNoise>0){
+    const bl=ctx.sampleRate*2,buf=ctx.createBuffer(1,bl,ctx.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<bl;i++)d[i]=Math.random()*2-1;
+    noiseNode=ctx.createBufferSource();noiseNode.buffer=buf;noiseNode.loop=true;
+    noiseNode.connect(noiseG);noiseNode.start(now);
   }
-
-  // ── Микшер
-  const m1=ctx.createGain(); m1.gain.value=S.mixOsc1/100*0.5;
-  const m2=ctx.createGain(); m2.gain.value=S.mixOsc2/100*0.5;
-
-  // ── Кольцевая модуляция
+  // Ring mod
   let rmOsc=null;
-  if (S.ringMod) {
-    rmOsc=ctx.createOscillator();
-    rmOsc.type='sine';
-    rmOsc.frequency.value=o2.frequency.value;
-    const rmG=ctx.createGain(); rmG.gain.value=0;
-    o1.connect(rmG.gain); m2.connect(rmG);
-    rmOsc.connect(rmG.gain);
-    rmOsc.start(now);
+  if(S.ringMod){
+    rmOsc=ctx.createOscillator();rmOsc.type='sine';rmOsc.frequency.value=o2.frequency.value;
+    const rmG=ctx.createGain();rmG.gain.value=0;
+    o1.connect(rmG.gain);m2.connect(rmG);rmOsc.connect(rmG.gain);rmOsc.start(now);
   }
-
-  // ── Поливокс SVF фильтр
-  const cutHz=p2hz(S.filterCutoff);
-  const q=polivoksQ(S.filterRes);
-  const r=S.filterRes/100;
-  const fb=r<0.75?r*0.3:0.225+Math.pow((r-0.75)/0.25,2)*1.8;
-
-  const inputClip=makeSlewShaper();
-
-  const lpF=ctx.createBiquadFilter();
-  lpF.type='lowpass'; lpF.frequency.value=cutHz; lpF.Q.value=q;
-
-  const bpF=ctx.createBiquadFilter();
-  bpF.type=S.filterMode==='bp'?'bandpass':'bandpass';
-  bpF.frequency.value=cutHz; bpF.Q.value=Math.max(0.5,q*0.6);
-
-  const trapS=makeTrapShaper();
-  const fbG=ctx.createGain(); fbG.gain.value=fb;
-
-  const lpOut=ctx.createGain(); lpOut.gain.value=S.filterMode==='bp'?0.3:0.72;
-  const bpOut=ctx.createGain(); bpOut.gain.value=S.filterMode==='bp'?0.7:0.28+r*0.3;
-  const fOut=ctx.createGain(); fOut.gain.value=1;
-
-  // ── Огибающая усилителя
-  const envG=ctx.createGain();
-  envG.gain.setValueAtTime(0,now);
-  const atk=p2s(S.envA,0.002,2);
-  const dec=p2s(S.envD,0.01,3);
-  const sus=S.envS/100;
+  // SVF фильтр
+  const cut=p2hz(S.filterCutoff),q=polvQ(S.filterRes),r=S.filterRes/100;
+  const fb=r<.75?r*.3:.225+Math.pow((r-.75)/.25,2)*1.8;
+  const clip=mkSlew();
+  const lpF=ctx.createBiquadFilter();lpF.type='lowpass';lpF.frequency.value=cut;lpF.Q.value=q;
+  const bpF=ctx.createBiquadFilter();bpF.type='bandpass';bpF.frequency.value=cut;bpF.Q.value=Math.max(.5,q*.6);
+  const trap=mkTrap();
+  const fbG=ctx.createGain();fbG.gain.value=fb;
+  const lpO=ctx.createGain();lpO.gain.value=S.filterMode==='bp'?.3:.72;
+  const bpO=ctx.createGain();bpO.gain.value=S.filterMode==='bp'?.7:.28+r*.3;
+  const fOut=ctx.createGain();fOut.gain.value=1;
+  // Огибающая
+  const envG=ctx.createGain();envG.gain.setValueAtTime(0,now);
+  const atk=p2s(S.envA,.002,2),dec=p2s(S.envD,.01,3),sus=S.envS/100;
   envG.gain.linearRampToValueAtTime(1,now+atk);
   envG.gain.linearRampToValueAtTime(sus,now+atk+dec);
-
-  // ── Огибающая фильтра
-  const fEnvOct=(S.filterEnv/100)*3.5;
-  const fStart=fEnvOct>=0?cutHz*Math.pow(2,-1.5):cutHz*Math.pow(2,Math.abs(fEnvOct));
-  const fPeak=Math.min(Math.max(cutHz*Math.pow(2,fEnvOct),30),18000);
+  // Огибающая фильтра
+  const fea=(S.filterEnv/100)*3.5;
+  const fs=fea>=0?cut*Math.pow(2,-1.5):cut*Math.pow(2,Math.abs(fea));
+  const fp=Math.min(Math.max(cut*Math.pow(2,fea),30),18000);
   [lpF,bpF].forEach(f=>{
-    f.frequency.setValueAtTime(fStart,now);
-    f.frequency.linearRampToValueAtTime(fPeak,now+atk);
-    f.frequency.exponentialRampToValueAtTime(Math.max(cutHz,30),now+atk+dec);
+    f.frequency.setValueAtTime(fs,now);
+    f.frequency.linearRampToValueAtTime(fp,now+atk);
+    f.frequency.exponentialRampToValueAtTime(Math.max(cut,30),now+atk+dec);
   });
-
-  // ── LFO
-  if (S.lfoToFilter){ lfoGain.connect(lpF.frequency); lfoGain.connect(bpF.frequency); }
-  if (S.lfoToAmp) lfoGain.connect(envG.gain);
-  if (S.lfoToPitch){ lfoGain.connect(o1.frequency); lfoGain.connect(o2.frequency); }
-
-  // ── Граф
-  o1.connect(m1); o2.connect(m2);
-  m1.connect(inputClip); m2.connect(inputClip);
-  noiseGain.connect(inputClip);
-  inputClip.connect(lpF); inputClip.connect(bpF);
-  lpF.connect(lpOut); bpF.connect(bpOut);
-  lpOut.connect(fOut); bpOut.connect(fOut);
-  bpF.connect(trapS); trapS.connect(fbG); fbG.connect(lpF);
-  fOut.connect(envG); envG.connect(masterGain);
-
-  o1.start(now); o2.start(now);
-
-  activeNotes[midi]={o1,o2,rmOsc,noiseNode,envG,lpF,bpF,fbG,lpOut,bpOut,atk,atStarted:now};
-  document.getElementById('sbNote').textContent=midiName(midi);
-  document.getElementById('sbFreq').textContent=freq.toFixed(1);
+  // LFO
+  if(S.lfoToFilter){lfoGain.connect(lpF.frequency);lfoGain.connect(bpF.frequency);}
+  if(S.lfoToAmp)lfoGain.connect(envG.gain);
+  if(S.lfoToPitch){lfoGain.connect(o1.frequency);lfoGain.connect(o2.frequency);}
+  // Граф
+  o1.connect(m1);o2.connect(m2);
+  m1.connect(clip);m2.connect(clip);noiseG.connect(clip);
+  clip.connect(lpF);clip.connect(bpF);
+  lpF.connect(lpO);bpF.connect(bpO);
+  lpO.connect(fOut);bpO.connect(fOut);
+  bpF.connect(trap);trap.connect(fbG);fbG.connect(lpF);
+  fOut.connect(envG);envG.connect(masterGain);
+  o1.start(now);o2.start(now);
+  activeNotes[midi]={o1,o2,rmOsc,noiseNode,envG,lpF,bpF,fbG,lpO,bpO,atk};
+  document.getElementById('sbN').textContent=mName(midi);
+  document.getElementById('sbF').textContent=freq.toFixed(1);
 }
 
-function stopNote(midi) {
-  if (!ctx) return;
-  const n=activeNotes[midi]; if(!n) return;
-  const now=ctx.currentTime;
-  const rel=p2s(S.envR,0.015,4);
+function stopNote(midi){
+  if(!ctx)return;
+  const n=activeNotes[midi];if(!n)return;
+  const now=ctx.currentTime,rel=p2s(S.envR,.015,4);
   n.envG.gain.cancelScheduledValues(now);
   n.envG.gain.setValueAtTime(n.envG.gain.value,now);
   n.envG.gain.linearRampToValueAtTime(0,now+rel);
-  const stop=now+rel+0.05;
-  try{n.o1.stop(stop);}catch(e){}
-  try{n.o2.stop(stop);}catch(e){}
-  try{if(n.rmOsc)n.rmOsc.stop(stop);}catch(e){}
-  try{if(n.noiseNode)n.noiseNode.stop(stop);}catch(e){}
+  const st=now+rel+.05;
+  try{n.o1.stop(st);}catch(e){}
+  try{n.o2.stop(st);}catch(e){}
+  try{if(n.rmOsc)n.rmOsc.stop(st);}catch(e){}
+  try{if(n.noiseNode)n.noiseNode.stop(st);}catch(e){}
   delete activeNotes[midi];
 }
 
-function panic() {
-  Object.keys(activeNotes).forEach(m=>stopNote(parseInt(m)));
+function panic(){
+  Object.keys(activeNotes).forEach(m=>stopNote(+m));
   activeNotes={};
-  if (autoEnvInterval){ clearInterval(autoEnvInterval); autoEnvInterval=null; }
+  stopArp();stopAutoEnv();
 }
 
-// ════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
 // POWER
-// ════════════════════════════════════════════════════════
-function togglePower() {
+// ══════════════════════════════════════════════════
+function togglePower(){
   powered=!powered;
-  const el=document.getElementById('synth');
-  const tog=document.getElementById('powerToggle');
-  if (powered) {
-    initAudio();
-    if (ctx.state==='suspended') ctx.resume();
-    el.classList.remove('off');
-    tog.classList.add('on');
-  } else {
-    panic();
-    el.classList.add('off');
-    tog.classList.remove('on');
-  }
+  const s=document.getElementById('synth'),sw=document.getElementById('pwSw');
+  if(powered){ensureCtx();if(ctx.state==='suspended')ctx.resume();s.classList.remove('off');sw.classList.add('on');}
+  else{panic();s.classList.add('off');sw.classList.remove('on');}
 }
 
-// ════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
 // РУЧКИ
-// ════════════════════════════════════════════════════════
-const KNOB_RANGE=220; // градусы
-function knobAngle(val,min,max) {
-  return -KNOB_RANGE/2 + ((val-min)/(max-min))*KNOB_RANGE;
-}
-function setKnobMark(el,val) {
-  const min=parseFloat(el.dataset.min), max=parseFloat(el.dataset.max);
-  const mark=el.querySelector('.knob-mark');
-  if (!mark) return;
-  const ang=knobAngle(val,min,max);
-  mark.style.transform=`translateX(-50%) rotate(${ang}deg)`;
-  mark.style.left='50%';
-}
-
-let activeKnob=null, knobStartY=0, knobStartVal=0;
-
-function initKnobs() {
-  document.querySelectorAll('.knob').forEach(knob=>{
-    const val=parseFloat(knob.dataset.val);
-    setKnobMark(knob,val);
-
-    const onStart=(y)=>{
-      if (!powered) return;
-      activeKnob=knob; knobStartY=y;
-      knobStartVal=parseFloat(knob.dataset.val);
-    };
-    knob.addEventListener('touchstart',e=>{e.preventDefault();onStart(e.touches[0].clientY);},{passive:false});
-    knob.addEventListener('mousedown',e=>onStart(e.clientY));
-  });
-
-  document.addEventListener('touchmove',e=>{
-    if (!activeKnob) return;
-    e.preventDefault();
-    moveKnob(e.touches[0].clientY);
-  },{passive:false});
-  document.addEventListener('mousemove',e=>{ if(activeKnob) moveKnob(e.clientY); });
-  document.addEventListener('touchend',()=>{ activeKnob=null; });
-  document.addEventListener('mouseup',()=>{ activeKnob=null; });
-}
-
-function moveKnob(y) {
-  if (!activeKnob) return;
-  const min=parseFloat(activeKnob.dataset.min);
-  const max=parseFloat(activeKnob.dataset.max);
-  const dy=knobStartY-y;
-  const newVal=Math.min(max,Math.max(min,knobStartVal+dy*(max-min)/160));
-  activeKnob.dataset.val=newVal;
-  setKnobMark(activeKnob,newVal);
-  applyParam(activeKnob.dataset.param,newVal);
-}
-
-function applyParam(p,v) {
-  S[p]=v;
-  switch(p){
-    case 'ampVol': updateVol(); break;
-    case 'lfoRate': case 'lfoDepth': updateLfo(); break;
-    case 'filterCutoff':{
-      const hz=p2hz(v);
-      Object.values(activeNotes).forEach(n=>{
-        if(n.lpF) n.lpF.frequency.value=hz;
-        if(n.bpF) n.bpF.frequency.value=hz;
-      }); break;
-    }
-    case 'filterRes':{
-      const q=polivoksQ(v), r=v/100;
-      const fb=r<0.75?r*0.3:0.225+Math.pow((r-0.75)/0.25,2)*1.8;
-      const bpMix=0.28+r*0.3;
-      Object.values(activeNotes).forEach(n=>{
-        if(n.lpF) n.lpF.Q.value=q;
-        if(n.bpF) n.bpF.Q.value=Math.max(0.5,q*0.6);
-        if(n.fbG) n.fbG.gain.value=fb;
-        if(n.bpOut) n.bpOut.gain.value=bpMix;
-      }); break;
-    }
-    case 'mixOsc1': case 'mixOsc2': case 'mixNoise':
-      // обновится при следующей ноте
-      break;
+// ══════════════════════════════════════════════════
+const DEG=220;
+function kAngle(v,mn,mx){return-DEG/2+((v-mn)/(mx-mn))*DEG;}
+function setKnob(el,v){
+  const mn=+el.dataset.min,mx=+el.dataset.max;
+  const line=el.querySelector('.knob-line');
+  if(line){
+    const a=kAngle(v,mn,mx);
+    line.style.transform=`translateX(-50%) rotate(${a}deg)`;
+    line.style.left='50%';
   }
 }
 
-// ════════════════════════════════════════════════════════
+let aKnob=null,aKnobY=0,aKnobV=0;
+function initKnobs(){
+  document.querySelectorAll('.knob-outer').forEach(k=>{
+    setKnob(k,+k.dataset.val);
+    const onS=(y)=>{if(!powered)return;aKnob=k;aKnobY=y;aKnobV=+k.dataset.val;};
+    k.addEventListener('touchstart',e=>{e.preventDefault();onS(e.touches[0].clientY);},{passive:false});
+    k.addEventListener('mousedown',e=>onS(e.clientY));
+  });
+  document.addEventListener('touchmove',e=>{if(!aKnob)return;e.preventDefault();moveK(e.touches[0].clientY);},{passive:false});
+  document.addEventListener('mousemove',e=>{if(aKnob)moveK(e.clientY);});
+  document.addEventListener('touchend',()=>{aKnob=null;});
+  document.addEventListener('mouseup',()=>{aKnob=null;});
+}
+function moveK(y){
+  if(!aKnob)return;
+  const mn=+aKnob.dataset.min,mx=+aKnob.dataset.max;
+  const v=Math.min(mx,Math.max(mn,aKnobV+(aKnobY-y)*(mx-mn)/160));
+  aKnob.dataset.val=v;setKnob(aKnob,v);applyP(aKnob.dataset.p,v);
+}
+function applyP(p,v){
+  S[p]=v;
+  if(p==='ampVol'&&masterGain)masterGain.gain.value=v/100*.85;
+  if(p==='lfoRate'||p==='lfoDepth')updateLfo();
+  if(p==='filterCutoff'){const hz=p2hz(v);Object.values(activeNotes).forEach(n=>{try{n.lpF.frequency.value=hz;n.bpF.frequency.value=hz;}catch(e){}});}
+  if(p==='filterRes'){const q=polvQ(v),r=v/100,fb=r<.75?r*.3:.225+Math.pow((r-.75)/.25,2)*1.8;Object.values(activeNotes).forEach(n=>{try{n.lpF.Q.value=q;n.bpF.Q.value=Math.max(.5,q*.6);n.fbG.gain.value=fb;}catch(e){}});}
+  if(p==='arpBpm'){const el=document.getElementById('vArpBpm');if(el)el.textContent=Math.round(v);if(S.arpOn)restartArp();}
+  if(p==='arpGate'){}
+}
+
+// ══════════════════════════════════════════════════
 // ПЕРЕКЛЮЧАТЕЛИ
-// ════════════════════════════════════════════════════════
-function setWave(osc,wave,btn) {
+// ══════════════════════════════════════════════════
+function setWave(osc,wave,btn){
   S[`osc${osc}Wave`]=wave;
-  document.querySelectorAll(`#o${osc}saw,#o${osc}sq,#o${osc}tri`).forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll(`[id^=o${osc}]`).forEach(b=>{if(['Saw','Sq','Tri'].some(s=>b.id===`o${osc}${s}`))b.classList.remove('on');});
   btn.classList.add('on');
-  Object.values(activeNotes).forEach(n=>{
-    try{if(osc===1&&n.o1)n.o1.type=wave;if(osc===2&&n.o2)n.o2.type=wave;}catch(e){}
-  });
+  Object.values(activeNotes).forEach(n=>{try{if(osc===1)n.o1.type=wave;else n.o2.type=wave;}catch(e){}});
 }
-
-function setRange(osc,r,btn) {
+function setRange(osc,r,btn){
   S[`osc${osc}Range`]=r;
-  document.querySelectorAll(`#o${osc}r32,#o${osc}r16,#o${osc}r8`).forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll(`[id^=o${osc}r]`).forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
 }
-
-function setLfoWave(wave,btn) {
-  S.lfoWave=wave;
-  ['lfoSine','lfoSquare','lfoSaw'].forEach(id=>document.getElementById(id).classList.remove('on'));
-  btn.classList.add('on');
-  updateLfo();
+function setLfoWave(w,btn){
+  S.lfoWave=w;
+  ['swLfoSin','swLfoSq','swLfoSaw'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  btn.classList.add('on');updateLfo();
 }
-
-function toggleLfo(target) {
-  const key=`lfoTo${target}`;
-  S[key]=!S[key];
-  document.getElementById(`lfoTo${target}`).classList.toggle('on',S[key]);
+function toggleLfoTo(t){
+  const k=`lfoTo${t}`;S[k]=!S[k];
+  document.getElementById(`swLfo${t}`).classList.toggle('on',S[k]);
 }
-
-function toggleRingMod() {
+function toggleRM(){
   S.ringMod=!S.ringMod;
-  document.getElementById('ringModBtn').classList.toggle('on',S.ringMod);
-  document.getElementById('ringLed').classList.toggle('on',S.ringMod);
+  document.getElementById('swRM').classList.toggle('on',S.ringMod);
+  document.getElementById('ledRM').classList.toggle('on',S.ringMod);
 }
-
-function toggleFilterMode() {
+function toggleFMode(){
   S.filterMode=S.filterMode==='lp'?'bp':'lp';
-  const lever=document.getElementById('filterLever');
-  lever.style.top=S.filterMode==='bp'?'22px':'2px';
+  document.getElementById('levFMode').style.top=S.filterMode==='bp'?'22px':'2px';
   document.getElementById('sbFlt').textContent=S.filterMode==='bp'?'ПФ':'ФНЧ';
-  // обновим выходной микс на активных нотах
   Object.values(activeNotes).forEach(n=>{
-    if(n.lpOut) n.lpOut.gain.value=S.filterMode==='bp'?0.3:0.72;
-    if(n.bpOut) n.bpOut.gain.value=S.filterMode==='bp'?0.7:0.28;
+    try{n.lpO.gain.value=S.filterMode==='bp'?.3:.72;n.bpO.gain.value=S.filterMode==='bp'?.7:.28;}catch(e){}
   });
 }
-
-function toggleAutoEnv() {
+function toggleAutoEnv(){
   S.autoEnv=!S.autoEnv;
-  const lever=document.getElementById('autoLever');
-  lever.style.top=S.autoEnv?'2px':'22px';
-  if (S.autoEnv) startAutoEnv(); else stopAutoEnv();
+  document.getElementById('levAuto').style.top=S.autoEnv?'2px':'22px';
+  S.autoEnv?startAutoEnv():stopAutoEnv();
 }
-
-function startAutoEnv() {
+function startAutoEnv(){
   stopAutoEnv();
-  const period=()=>(p2s(S.envA,0.002,2)+p2s(S.envD,0.01,3))*1000;
-  const midiC=60+octave*12-48; // С текущей октавы
-  autoEnvInterval=setInterval(()=>{
-    if (!powered) return;
-    playNote(midiC);
-    setTimeout(()=>stopNote(midiC), period()*0.4);
-  }, period());
+  const tick=()=>{
+    if(!powered||!S.autoEnv)return;
+    const midi=48+octave*12-36;
+    const period=(p2s(S.envA,.002,2)+p2s(S.envD,.01,3))*1000;
+    playNote(midi);setTimeout(()=>stopNote(midi),period*.45);
+    autoEnvTimer=setTimeout(tick,period);
+  };tick();
 }
-function stopAutoEnv() {
-  if (autoEnvInterval){ clearInterval(autoEnvInterval); autoEnvInterval=null; }
-}
+function stopAutoEnv(){if(autoEnvTimer){clearTimeout(autoEnvTimer);autoEnvTimer=null;}}
 
-// ════════════════════════════════════════════════════════
-// КЛАВИАТУРА
-// ════════════════════════════════════════════════════════
-const WHITE=[0,2,4,5,7,9,11];
-const BLACK_POS={0:1,2:3,5:6,7:8,9:10}; // семитон → соседний чёрный
+// ══════════════════════════════════════════════════
+// АРПЕДЖИАТОР
+// ══════════════════════════════════════════════════
 const NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const NOTE_RU=['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си'];
+function mName(m){return NOTE_RU[m%12]+(Math.floor(m/12)-1);}
 
-function midiName(midi){ return NOTE_RU[midi%12]+(Math.floor(midi/12)-1); }
+function buildArpSteps(){
+  const sg=document.getElementById('arpSteps');
+  const nr=document.getElementById('arpNoteRow');
+  sg.innerHTML='';nr.innerHTML='';
+  for(let i=0;i<16;i++){
+    const s=document.createElement('div');s.className='arp-step'+(S.arpSteps[i]?' on':'');
+    s.dataset.i=i;
+    const n=document.createElement('div');n.className='arp-step-n';n.textContent=i+1;
+    s.appendChild(n);
+    s.addEventListener('click',()=>toggleStep(i,s));
+    sg.appendChild(s);
+    // Нота
+    const nb=document.createElement('div');
+    nb.className='sw';nb.id=`arpN${i}`;
+    nb.style.cssText='flex:1;font-size:7px;padding:3px 2px;text-align:center;min-width:0';
+    nb.textContent=NOTE_NAMES[S.arpNotes[i]%12];
+    nb.addEventListener('click',()=>cycleArpNote(i,nb));
+    nr.appendChild(nb);
+  }
+}
+function toggleStep(i,el){S.arpSteps[i]=!S.arpSteps[i];el.classList.toggle('on',S.arpSteps[i]);}
+function cycleArpNote(i,el){
+  // Цикл по всем нотам в октаве
+  const chromatic=[0,2,4,5,7,9,11,1,3,6,8,10]; // белые потом чёрные
+  const cur=S.arpNotes[i]%12;
+  const idx=chromatic.indexOf(cur);
+  const next=chromatic[(idx+1)%chromatic.length];
+  S.arpNotes[i]=(Math.floor(S.arpNotes[i]/12)*12)+next;
+  el.textContent=NOTE_NAMES[next];
+}
+function setArpMode(m,btn){
+  S.arpMode=m;
+  ['arpMUp','arpMDn','arpMUD','arpMRnd'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  btn.classList.add('on');
+}
+function setArpRange(r,btn){
+  S.arpRange=r;
+  ['arpR1','arpR2','arpR3'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  btn.classList.add('on');
+}
+function toggleArp(){
+  S.arpOn=!S.arpOn;
+  document.getElementById('swArp').classList.toggle('on',S.arpOn);
+  document.getElementById('ledArp').classList.toggle('on',S.arpOn);
+  document.getElementById('sbArp').textContent=S.arpOn?'ВКЛ':'ВЫК';
+  S.arpOn?startArp():stopArp();
+}
+function startArp(){stopArp();arpStep=0;tickArp();}
+function stopArp(){
+  if(arpTimer){clearTimeout(arpTimer);arpTimer=null;}
+  Object.keys(activeNotes).forEach(m=>stopNote(+m));
+}
+function restartArp(){if(S.arpOn){stopArp();startArp();}}
 
-function buildKeyboard() {
-  const kb=document.getElementById('keyboard');
-  kb.innerHTML='';
-  const numOct=2;
-  let wx=0;
-  for(let o=0;o<numOct;o++){
-    for(let wi=0;wi<7;wi++){
-      const semi=WHITE[wi];
-      const midi=(octave+o)*12+semi;
-      const wk=document.createElement('div');
-      wk.className='key-w'; wk.dataset.midi=midi;
-      if(semi===0){
-        const lbl=document.createElement('div');
-        lbl.className='note-lbl'; lbl.textContent='С'+(octave+o);
-        wk.appendChild(lbl);
+function tickArp(){
+  if(!S.arpOn||!powered)return;
+  const bpm=S.arpBpm,gate=S.arpGate/100;
+  const step16=60000/bpm/4; // 16-я нота
+  // Подсветка шага
+  document.querySelectorAll('.arp-step').forEach((el,i)=>{el.classList.toggle('play',i===arpStep%16);});
+  if(S.arpSteps[arpStep%16]){
+    // Определяем ноту
+    const activeStepNotes=getArpNotes();
+    if(activeStepNotes.length>0){
+      let idx;
+      const len=activeStepNotes.length;
+      switch(S.arpMode){
+        case 'up': idx=arpStep%len; break;
+        case 'down': idx=(len-1)-(arpStep%len); break;
+        case 'updown':{const t=len*2-2;const p=arpStep%(t||1);idx=p<len?p:t-p;}break;
+        case 'random': idx=Math.floor(Math.random()*len); break;
+        default: idx=arpStep%len;
       }
-      const onOn=()=>{ if(!powered)return; wk.classList.add('pressed'); playNote(midi); };
-      const onOff=()=>{ wk.classList.remove('pressed'); stopNote(midi); };
-      wk.addEventListener('touchstart',e=>{e.preventDefault();onOn();},{passive:false});
-      wk.addEventListener('touchend',e=>{e.preventDefault();onOff();});
-      wk.addEventListener('mousedown',onOn);
-      wk.addEventListener('mouseup',onOff);
-      wk.addEventListener('mouseleave',onOff);
-      kb.appendChild(wk);
+      const midi=activeStepNotes[Math.max(0,Math.min(idx,len-1))];
+      Object.keys(activeNotes).forEach(m=>stopNote(+m));
+      playNote(midi);
+      setTimeout(()=>{if(activeNotes[midi])stopNote(midi);},step16*gate);
+    }
+  }
+  arpStep=(arpStep+1)%16;
+  arpTimer=setTimeout(tickArp,step16);
+}
 
-      // Чёрная клавиша
-      if(BLACK_POS[semi]!==undefined){
-        const bsemi=BLACK_POS[semi];
-        const bmidi=(octave+o)*12+bsemi;
-        const bk=document.createElement('div');
-        bk.className='key-b'; bk.dataset.midi=bmidi;
-        bk.style.left=(wx*33+21)+'px';
-        const bOn=()=>{ if(!powered)return; bk.classList.add('pressed'); playNote(bmidi); };
-        const bOff=()=>{ bk.classList.remove('pressed'); stopNote(bmidi); };
-        bk.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();bOn();},{passive:false});
-        bk.addEventListener('touchend',e=>{e.preventDefault();bOff();});
-        bk.addEventListener('mousedown',e=>{e.stopPropagation();bOn();});
-        bk.addEventListener('mouseup',bOff);
+function getArpNotes(){
+  // Берём ноты из arpNotes[], применяем диапазон октав
+  const base=[];
+  for(let i=0;i<16;i++){if(S.arpSteps[i])base.push(S.arpNotes[i]);}
+  if(!base.length)return[];
+  // Деdup + сортировка
+  const uniq=[...new Set(base)].sort((a,b)=>a-b);
+  const result=[];
+  for(let o=0;o<S.arpRange;o++){uniq.forEach(n=>result.push(n+o*12));}
+  return result;
+}
+
+// ══════════════════════════════════════════════════
+// КЛАВИАТУРА
+// ══════════════════════════════════════════════════
+const WS=[0,2,4,5,7,9,11];
+const BP={0:1,2:3,5:6,7:8,9:10};
+function buildKb(){
+  const kb=document.getElementById('keyboard');kb.innerHTML='';
+  for(let o=0;o<2;o++){
+    for(let wi=0;wi<7;wi++){
+      const semi=WS[wi],midi=(octave+o)*12+semi;
+      const k=document.createElement('div');k.className='kw';k.dataset.midi=midi;
+      if(semi===0){const l=document.createElement('div');l.className='klbl';l.textContent='С'+(octave+o);k.appendChild(l);}
+      const on=()=>{if(!powered)return;k.classList.add('pr');
+        if(S.arpOn){setArpNoteFromKb(midi);}else{playNote(midi);}};
+      const off=()=>{k.classList.remove('pr');if(!S.arpOn)stopNote(midi);};
+      k.addEventListener('touchstart',e=>{e.preventDefault();on();},{passive:false});
+      k.addEventListener('touchend',e=>{e.preventDefault();off();});
+      k.addEventListener('mousedown',on);k.addEventListener('mouseup',off);k.addEventListener('mouseleave',off);
+      kb.appendChild(k);
+      if(BP[semi]!==undefined){
+        const bm=(octave+o)*12+BP[semi];
+        const bk=document.createElement('div');bk.className='kb';bk.dataset.midi=bm;
+        bk.style.left=(wi*31+20+o*217)+'px';
+        const bon=()=>{if(!powered)return;bk.classList.add('pr');
+          if(S.arpOn){setArpNoteFromKb(bm);}else{playNote(bm);}};
+        const boff=()=>{bk.classList.remove('pr');if(!S.arpOn)stopNote(bm);};
+        bk.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();bon();},{passive:false});
+        bk.addEventListener('touchend',e=>{e.preventDefault();boff();});
+        bk.addEventListener('mousedown',e=>{e.stopPropagation();bon();});
+        bk.addEventListener('mouseup',boff);
         kb.appendChild(bk);
       }
-      wx++;
     }
   }
 }
 
-function shiftOct(d) {
-  octave=Math.max(1,Math.min(7,octave+d));
-  document.getElementById('octDisp').textContent=octave;
-  document.getElementById('sbOct').textContent=octave;
-  buildKeyboard();
+// При нажатии клавиши в режиме арп — задаём ноту текущему шагу или добавляем в arpheldNotes
+let arpEditStep=0;
+function setArpNoteFromKb(midi){
+  S.arpNotes[arpEditStep%16]=midi;
+  const el=document.getElementById(`arpN${arpEditStep%16}`);
+  if(el)el.textContent=NOTE_NAMES[midi%12];
+  arpEditStep=(arpEditStep+1)%16;
 }
 
-// ════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════
-initKnobs();
-buildKeyboard();
+function shiftOct(d){
+  octave=Math.max(1,Math.min(7,octave+d));
+  document.getElementById('octNum').textContent=octave;
+  document.getElementById('sbO').textContent=octave;
+  buildKb();
+}
 
-// Инициализируем начальные позиции ручек
-document.querySelectorAll('.knob').forEach(k=>{
-  setKnobMark(k, parseFloat(k.dataset.val));
-});
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+initKnobs();
+buildKb();
+buildArpSteps();
+// Установить начальные позиции ручек
+document.querySelectorAll('.knob-outer').forEach(k=>setKnob(k,+k.dataset.val));
+// BPM display
+document.getElementById('vArpBpm').textContent=Math.round(S.arpBpm);
 </script>
 </body>
 </html>
