@@ -746,18 +746,23 @@
 
 <script>
 // ═══════════════════════════════════════════════════
-// AUDIO ENGINE
+// AUDIO ENGINE — ПОЛИВОКС SVF ЭМУЛЯЦИЯ
+// ═══════════════════════════════════════════════════
+// Оригинал: К140УД12 как slew-rate генератор тока.
+// Топология: state-variable фильтр (2 интегратора).
+// Особенности:
+//   - LP + BP выходы (LP доминирует, BP добавляет агрессию)
+//   - Самовозбуждение трапециевидной формой при высоком Q
+//   - Лёгкое насыщение на низких частотах (slew limiting)
+//   - Нестабильность при высоком резонансе
 // ═══════════════════════════════════════════════════
 let ctx = null;
-let masterGain, reverbNode, filterNode;
-let osc1, osc2, ringModOsc, ringModGain;
+let masterGain;
 let lfoOsc, lfoGain;
-let ampEnvGain;
 let activeNotes = {};
 let powered = false;
 let currentOctave = 4;
 
-// Synth state
 const state = {
   osc1Wave: 'sawtooth',
   osc2Wave: 'sawtooth',
@@ -775,14 +780,54 @@ const state = {
   arpSteps: Array(16).fill(false).map((_,i) => i < 8)
 };
 
-function noteToFreq(midi) {
-  return 440 * Math.pow(2, (midi - 69) / 12);
+function noteToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+function paramToSeconds(v, mn=0.001, mx=3) { return mn + (v/100)*(mx-mn); }
+function paramToHz(v, mn=30, mx=18000) { return mn * Math.pow(mx/mn, v/100); }
+
+// ── Поливокс Q-кривая ─────────────────────────────
+// Оригинал: резонанс нелинейный — долго мягкий, потом
+// резко уходит в самовозбуждение выше ~75%
+function polivoksQ(res) {
+  const r = res / 100;
+  // Нелинейная кривая: медленный рост до 75%, затем экспоненциальный взлёт
+  if (r < 0.75) return 0.5 + r * 4;
+  return 4 + Math.pow((r - 0.75) / 0.25, 2.5) * 26;
 }
-function paramToSeconds(val, min=0.001, max=3) {
-  return min + (val/100) * (max-min);
+
+// ── Входной soft-clip (насыщение К140УД12) ─────────
+function makeSlewShaper(ctx) {
+  const shaper = ctx.createWaveShaper();
+  const n = 512;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i / (n/2)) - 1;
+    // Асимметричный soft-clip: положительная полуволна сильнее насыщается
+    // (характерно для однополярного питания оригинальных советских ОУ)
+    if (x >= 0) {
+      curve[i] = Math.tanh(x * 3.5) * 0.85;
+    } else {
+      curve[i] = Math.tanh(x * 2.2) * 0.95;
+    }
+  }
+  shaper.curve = curve;
+  shaper.oversample = '4x';
+  return shaper;
 }
-function paramToHz(val, min=20, max=20000) {
-  return min * Math.pow(max/min, val/100);
+
+// ── Трапециевидный shaper для petли самовозбуждения ─
+// К140УД12 ограничивает скорость нарастания → трапеция вместо синуса
+function makeTrapShaper(ctx) {
+  const shaper = ctx.createWaveShaper();
+  const n = 512;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i / (n/2)) - 1;
+    // Жёсткий clip → трапеция (slew-limited square)
+    curve[i] = Math.max(-0.85, Math.min(0.85, x * 8));
+  }
+  shaper.curve = curve;
+  shaper.oversample = '2x';
+  return shaper;
 }
 
 function initAudio() {
@@ -792,7 +837,6 @@ function initAudio() {
   masterGain.gain.value = 0.7;
   masterGain.connect(ctx.destination);
 
-  // LFO
   lfoOsc = ctx.createOscillator();
   lfoGain = ctx.createGain();
   lfoOsc.type = state.lfoWave;
@@ -811,55 +855,86 @@ function playNote(midiNote) {
   const freq = noteToFreq(midiNote);
   const now = ctx.currentTime;
 
-  // OSC 1
+  // ── ОСЦИЛЛЯТОРЫ ───────────────────────────────────
   const o1 = ctx.createOscillator();
   o1.type = state.osc1Wave;
-  const freq1 = freq * Math.pow(2, state.osc1Tune/12) * Math.pow(2, state.osc1Fine/1200);
-  o1.frequency.value = freq1;
+  o1.frequency.value = freq * Math.pow(2, state.osc1Tune/12) * Math.pow(2, state.osc1Fine/1200);
 
-  // OSC 2
   const o2 = ctx.createOscillator();
   o2.type = state.osc2Wave;
-  const freq2 = freq * Math.pow(2, state.osc2Tune/12) * Math.pow(2, state.osc2Fine/1200);
-  o2.frequency.value = freq2;
+  o2.frequency.value = freq * Math.pow(2, state.osc2Tune/12) * Math.pow(2, state.osc2Fine/1200);
 
-  // Mix
   const mix1 = ctx.createGain();
   const mix2 = ctx.createGain();
   mix1.gain.value = 0.5;
   mix2.gain.value = state.osc2Mix / 100 * 0.5;
 
-  // Ring mod
-  let ringIn;
+  // ── КОЛЬЦЕВАЯ МОДУЛЯЦИЯ ───────────────────────────
+  let rmOsc = null;
   if (state.ringMod) {
-    const rm = ctx.createOscillator();
-    rm.frequency.value = freq2;
-    const rmGain = ctx.createGain();
-    rmGain.gain.value = 1;
-    rm.connect(rmGain);
-
-    // Actual ring mod = multiply o1 * o2
-    const ringMixer = ctx.createGain();
-    ringMixer.gain.value = 0;
-    o1.connect(ringMixer.gain);
-    mix2.connect(ringMixer);
-    ringIn = ringMixer;
-    rm.start(now);
-
-    // Store for cleanup
-    activeNotes[midiNote] = activeNotes[midiNote] || {};
-    if (!activeNotes[midiNote]) activeNotes[midiNote] = {};
-    activeNotes[midiNote]._rm = rm;
+    rmOsc = ctx.createOscillator();
+    rmOsc.type = 'sine';
+    rmOsc.frequency.value = o2.frequency.value;
+    const rmCarrier = ctx.createGain();
+    rmCarrier.gain.value = 0;
+    o1.connect(rmCarrier.gain);
+    mix2.connect(rmCarrier);
+    mix1.connect(rmCarrier); // подмешиваем o1 через AM
+    rmOsc.connect(rmCarrier.gain);
+    rmOsc.start(now);
   }
 
-  // Filter
-  const flt = ctx.createBiquadFilter();
-  flt.type = 'lowpass';
-  const cutoffHz = paramToHz(state.filterCutoff);
-  flt.frequency.value = cutoffHz;
-  flt.Q.value = state.filterRes / 100 * 30;
+  // ── ПОЛИВОКС STATE-VARIABLE ФИЛЬТР ───────────────
+  //
+  // Топология оригинала (Vladimir Kuzmin, 1982):
+  //   Вход → Сумматор → [Интегратор1=BP] → [Интегратор2=LP]
+  //                ↑_________feedback(Q)____|
+  //
+  // В Web Audio эмулируем через:
+  //   - biquad LP  = интегратор 1 (даёт LP характеристику)
+  //   - biquad BP  = интегратор 2 (даёт BP характеристику)
+  //   - петля обратной связи BP→TrapShaper→вход (самовозбуждение)
+  //   - LP+BP микс на выходе (Поливокс имел оба выхода)
+  //   - входной soft-clip (slew насыщение К140УД12)
 
-  // Amp envelope
+  const cutoffHz = paramToHz(state.filterCutoff);
+  const q = polivoksQ(state.filterRes);
+
+  // Входной насытитель
+  const inputClip = makeSlewShaper(ctx);
+
+  // LP интегратор (основной выход)
+  const lpFilter = ctx.createBiquadFilter();
+  lpFilter.type = 'lowpass';
+  lpFilter.frequency.value = cutoffHz;
+  lpFilter.Q.value = q;
+
+  // BP интегратор (агрессивный характер Поливокса)
+  const bpFilter = ctx.createBiquadFilter();
+  bpFilter.type = 'bandpass';
+  bpFilter.frequency.value = cutoffHz;
+  bpFilter.Q.value = Math.max(0.5, q * 0.6);
+
+  // Петля самовозбуждения: BP → trapezoidal shaper → обратно на вход
+  // (имитирует slew-limiting К140УД12 в петле)
+  const trapShaper = makeTrapShaper(ctx);
+  const fbGain = ctx.createGain();
+  // Усиление петли: при res < 75% минимальное, выше — нелинейно растёт
+  const resNorm = state.filterRes / 100;
+  fbGain.gain.value = resNorm < 0.75
+    ? resNorm * 0.3
+    : 0.225 + Math.pow((resNorm - 0.75) / 0.25, 2) * 1.8;
+
+  // Микс LP+BP на выходе (Поливокс: LP доминирует, BP добавляет зубастость)
+  const lpOutGain = ctx.createGain();
+  const bpOutGain = ctx.createGain();
+  lpOutGain.gain.value = 0.75;
+  bpOutGain.gain.value = 0.25 + (state.filterRes / 100) * 0.35; // BP растёт с резонансом
+
+  const filterOut = ctx.createGain();
+  filterOut.gain.value = 1;
+
+  // ── ОГИБАЮЩАЯ УСИЛИТЕЛЯ ───────────────────────────
   const envGain = ctx.createGain();
   envGain.gain.setValueAtTime(0, now);
   const atk = paramToSeconds(state.envA, 0.002, 2);
@@ -868,35 +943,73 @@ function playNote(midiNote) {
   envGain.gain.linearRampToValueAtTime(1, now + atk);
   envGain.gain.linearRampToValueAtTime(sus, now + atk + dec);
 
-  // Filter envelope
-  const filterEnvAmt = (state.filterEnv / 100) * 3; // octaves
-  flt.frequency.setValueAtTime(cutoffHz * 0.3, now);
-  flt.frequency.linearRampToValueAtTime(cutoffHz * (1 + filterEnvAmt), now + atk);
-  flt.frequency.linearRampToValueAtTime(cutoffHz, now + atk + dec);
+  // ── ОГИБАЮЩАЯ ФИЛЬТРА ─────────────────────────────
+  // Оригинал: положительная или отрицательная модуляция частоты среза
+  const fEnvAmt = state.filterEnv / 100; // -1..+1
+  const fEnvOctaves = fEnvAmt * 3.5;
+  const fStart = fEnvOctaves >= 0
+    ? cutoffHz * Math.pow(2, -1.5)                          // positive env: стартуем ниже
+    : cutoffHz * Math.pow(2, Math.abs(fEnvOctaves));        // negative env: стартуем выше
+  const fPeak = Math.min(Math.max(
+    cutoffHz * Math.pow(2, fEnvOctaves), 30), 18000);
 
-  // LFO routing
+  [lpFilter, bpFilter].forEach(f => {
+    f.frequency.setValueAtTime(fStart, now);
+    f.frequency.linearRampToValueAtTime(fPeak, now + atk);
+    f.frequency.exponentialRampToValueAtTime(Math.max(cutoffHz, 30), now + atk + dec);
+  });
+
+  // ── LFO РОУТИНГ ───────────────────────────────────
   if (state.lfoToFilter) {
-    lfoGain.connect(flt.frequency);
+    lfoGain.connect(lpFilter.frequency);
+    lfoGain.connect(bpFilter.frequency);
   }
-  if (state.lfoToAmp) {
-    lfoGain.connect(envGain.gain);
-  }
+  if (state.lfoToAmp) lfoGain.connect(envGain.gain);
   if (state.lfoToPitch) {
     lfoGain.connect(o1.frequency);
     lfoGain.connect(o2.frequency);
   }
 
+  // ── ГРАФ СОЕДИНЕНИЙ ───────────────────────────────
+  // Осциллятор → inputClip → lpFilter → lpOutGain ─┐
+  //                        ↓                         ├→ filterOut → envGain → master
+  //                      bpFilter → bpOutGain ───────┘
+  //                        ↓
+  //                    trapShaper → fbGain ──────────→ lpFilter (петля)
+
   o1.connect(mix1);
   o2.connect(mix2);
-  mix1.connect(flt);
-  mix2.connect(flt);
-  flt.connect(envGain);
+  mix1.connect(inputClip);
+  mix2.connect(inputClip);
+
+  inputClip.connect(lpFilter);
+  inputClip.connect(bpFilter);
+
+  lpFilter.connect(lpOutGain);
+  bpFilter.connect(bpOutGain);
+
+  lpOutGain.connect(filterOut);
+  bpOutGain.connect(filterOut);
+
+  // Петля самовозбуждения: BP → trap → fb → LP вход
+  bpFilter.connect(trapShaper);
+  trapShaper.connect(fbGain);
+  fbGain.connect(lpFilter);
+
+  filterOut.connect(envGain);
   envGain.connect(masterGain);
 
   o1.start(now);
   o2.start(now);
+  if (rmOsc) rmOsc.start(now);
 
-  activeNotes[midiNote] = { o1, o2, envGain, flt, atk };
+  activeNotes[midiNote] = {
+    o1, o2, rmOsc, envGain,
+    lpFilter, bpFilter, fbGain, lpOutGain, bpOutGain,
+    // flt = lpFilter для совместимости с applyParam
+    flt: lpFilter, flt2: bpFilter,
+    atk
+  };
   updateDisplay(midiNote, freq);
   animateVU(true);
 }
@@ -910,9 +1023,10 @@ function stopNote(midiNote) {
   note.envGain.gain.cancelScheduledValues(now);
   note.envGain.gain.setValueAtTime(note.envGain.gain.value, now);
   note.envGain.gain.linearRampToValueAtTime(0, now + rel);
-  note.o1.stop(now + rel + 0.05);
-  note.o2.stop(now + rel + 0.05);
-  if (note._rm) note._rm.stop(now + rel + 0.05);
+  const stop = now + rel + 0.05;
+  note.o1.stop(stop);
+  note.o2.stop(stop);
+  if (note.rmOsc) try { note.rmOsc.stop(stop); } catch(e) {}
   delete activeNotes[midiNote];
   if (Object.keys(activeNotes).length === 0) animateVU(false);
 }
@@ -931,10 +1045,8 @@ function updateMasterVolume() {
 function updateLfo() {
   if (!lfoOsc) return;
   lfoOsc.type = state.lfoWave;
-  const rate = 0.1 + (state.lfoRate / 100) * 19.9;
-  lfoOsc.frequency.value = rate;
-  const depth = (state.lfoDepth / 100) * 800;
-  lfoGain.gain.value = depth;
+  lfoOsc.frequency.value = 0.1 + (state.lfoRate / 100) * 19.9;
+  lfoGain.gain.value = (state.lfoDepth / 100) * 900;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1061,14 +1173,25 @@ function applyParam(param, val) {
   switch(param) {
     case 'ampVol': updateMasterVolume(); break;
     case 'lfoRate': case 'lfoDepth': updateLfo(); break;
-    case 'filterCutoff':
+    case 'filterCutoff': {
+      const hz = paramToHz(val);
       Object.values(activeNotes).forEach(n => {
-        if (n.flt) n.flt.frequency.value = paramToHz(val);
+        if (n.lpFilter) { n.lpFilter.frequency.value = hz; }
+        if (n.bpFilter) { n.bpFilter.frequency.value = hz; }
       }); break;
-    case 'filterRes':
+    }
+    case 'filterRes': {
+      const q = polivoksQ(val);
+      const r = val / 100;
+      const fb = r < 0.75 ? r * 0.3 : 0.225 + Math.pow((r-0.75)/0.25, 2) * 1.8;
+      const bpMix = 0.25 + r * 0.35;
       Object.values(activeNotes).forEach(n => {
-        if (n.flt) n.flt.Q.value = val / 100 * 30;
+        if (n.lpFilter) n.lpFilter.Q.value = q;
+        if (n.bpFilter) n.bpFilter.Q.value = Math.max(0.5, q * 0.6);
+        if (n.fbGain)   n.fbGain.gain.value = fb;
+        if (n.bpOutGain) n.bpOutGain.gain.value = bpMix;
       }); break;
+    }
     case 'arpBpm':
       if (state.arpOn) restartArp(); break;
   }
