@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ПОЛИВОКС</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;700&display=swap');
+
+  :root {
+    --bg: #2a2620;
+    --panel: #3d3830;
+    --panel-light: #4a4438;
+    --cream: #c8b99a;
+    --cream-dark: #a09070;
+    --red: #c0392b;
+    --red-bright: #e74c3c;
+    --amber: #d4850a;
+    --amber-bright: #f39c12;
+    --knob-body: #1a1714;
+    --knob-ring: #5a5040;
+    --knob-mark: #e8d5b0;
+    --led-off: #1a0a0a;
+    --led-on: #ff2200;
+    --text: #c8b99a;
+    --text-dim: #7a6e5e;
+    --border: #5a5040;
+    --key-white: #ddd5c0;
+    --key-black: #1a1714;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(180deg, #1a1410 0%, var(--panel) 100%);
+    border-bottom: 3px solid var(--red);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Oswald', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: var(--cream);
+    text-shadow: 0 0 20px rgba(200,185,154,0.4);
+  }
+  .logo span { color: var(--red-bright); }
+  .logo-sub {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .power-section { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .power-btn {
+    width: 40px; height: 40px;
+    background: radial-gradient(circle at 40% 35%, #3a3030, #1a1010);
+    border: 2px solid var(--red);
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 0 8px rgba(192,57,43,0.4), inset 0 2px 4px rgba(0,0,0,0.8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    color: var(--red);
+    transition: all 0.1s;
+  }
+  .power-btn.on {
+    background: radial-gradient(circle at 40% 35%, #5a1010, #2a0808);
+    box-shadow: 0 0 16px rgba(231,76,60,0.8), inset 0 2px 4px rgba(0,0,0,0.8);
+    color: var(--red-bright);
+  }
+  .power-label { font-size: 8px; letter-spacing: 2px; color: var(--text-dim); }
+
+  /* ── MAIN LAYOUT ── */
+  .synth-body {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── SECTION PANELS ── */
+  .section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px;
+    position: relative;
+  }
+  .section-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--cream-dark);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-label .ru { font-size: 8px; color: var(--text-dim); }
+
+  /* ── ROW LAYOUT ── */
+  .row { display: flex; gap: 8px; align-items: flex-start; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .col-label {
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* ── KNOB ── */
+  .knob-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .knob-container {
+    position: relative;
+    width: 48px; height: 48px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .knob-container.small { width: 36px; height: 36px; }
+  .knob-container.large { width: 60px; height: 60px; }
+
+  .knob-svg { width: 100%; height: 100%; overflow: visible; }
+
+  .knob-val {
+    font-size: 8px;
+    color: var(--amber);
+    text-align: center;
+    min-width: 30px;
+  }
+
+  /* ── LED ── */
+  .led {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--led-off);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+    transition: all 0.05s;
+  }
+  .led.active {
+    background: var(--led-on);
+    box-shadow: 0 0 6px var(--led-on), inset 0 1px 2px rgba(255,100,100,0.4);
+  }
+  .led.amber { }
+  .led.amber.active {
+    background: var(--amber-bright);
+    box-shadow: 0 0 6px var(--amber-bright);
+  }
+
+  /* ── TOGGLE SWITCH ── */
+  .toggle-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .toggle {
+    width: 28px; height: 48px;
+    background: linear-gradient(180deg, #1a1714 0%, #2a2420 100%);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 3px;
+  }
+  .toggle-opt {
+    font-size: 7px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1;
+  }
+  .toggle-thumb {
+    width: 22px; height: 20px;
+    background: linear-gradient(180deg, #5a5040 0%, #3a3028 100%);
+    border: 1px solid var(--cream-dark);
+    border-radius: 2px;
+    position: absolute;
+    left: 2px;
+    transition: top 0.1s;
+  }
+
+  /* ── WAVEFORM SELECT ── */
+  .wave-select { display: flex; gap: 4px; }
+  .wave-btn {
+    width: 32px; height: 28px;
+    background: var(--panel-light);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.1s;
+  }
+  .wave-btn.active {
+    background: var(--red);
+    border-color: var(--red-bright);
+    box-shadow: 0 0 8px rgba(192,57,43,0.6);
+  }
+  .wave-btn svg { width: 20px; height: 14px; }
+
+  /* ── ARPEGGIATOR GRID ── */
+  .arp-grid { display: flex; gap: 4px; flex-wrap: wrap; }
+  .arp-step {
+    width: calc(100% / 8 - 4px);
+    height: 32px;
+    background: var(--panel-light);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.1s;
+    position: relative;
+  }
+  .arp-step.active {
+    background: var(--amber);
+    border-color: var(--amber-bright);
+    box-shadow: 0 0 6px rgba(212,133,10,0.6);
+  }
+  .arp-step.playing {
+    box-shadow: 0 0 12px var(--amber-bright);
+  }
+  .arp-step-num {
+    font-size: 7px;
+    color: rgba(200,185,154,0.3);
+    position: absolute;
+    bottom: 2px; right: 3px;
+  }
+
+  /* ── KEYBOARD ── */
+  .keyboard-wrap {
+    background: #1a1714;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px;
+    overflow-x: auto;
+  }
+  .keyboard {
+    display: flex;
+    position: relative;
+    height: 90px;
+    width: max-content;
+    min-width: 100%;
+    gap: 2px;
+  }
+  .key-white {
+    width: 36px;
+    height: 90px;
+    background: linear-gradient(180deg, var(--key-white) 0%, #c8bfae 100%);
+    border: 1px solid #8a8070;
+    border-radius: 0 0 4px 4px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.05s;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 4px;
+  }
+  .key-white:active, .key-white.pressed {
+    background: linear-gradient(180deg, #d4850a 0%, #a86808 100%);
+  }
+  .key-white .note-name {
+    font-size: 8px;
+    color: #5a5040;
+    pointer-events: none;
+  }
+  .key-black {
+    width: 24px;
+    height: 56px;
+    background: linear-gradient(180deg, #2a2420 0%, var(--key-black) 100%);
+    border: 1px solid #0a0806;
+    border-radius: 0 0 3px 3px;
+    cursor: pointer;
+    position: absolute;
+    z-index: 2;
+    transition: background 0.05s;
+  }
+  .key-black:active, .key-black.pressed {
+    background: linear-gradient(180deg, #c0392b 0%, #7a1a10 100%);
+  }
+
+  /* ── VU METER ── */
+  .vu-meter {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 40px;
+  }
+  .vu-bar {
+    width: 6px;
+    background: var(--panel-light);
+    border-radius: 1px;
+    position: relative;
+    height: 100%;
+  }
+  .vu-fill {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, #c0392b 0%, var(--amber) 40%, #27ae60 100%);
+    border-radius: 1px;
+    transition: height 0.05s;
+    height: 0%;
+  }
+
+  /* ── RING MOD LED ── */
+  .ringmod-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--panel-light);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+
+  /* ── MIDI / STATUS BAR ── */
+  .status-bar {
+    background: #1a1410;
+    border-top: 1px solid var(--border);
+    padding: 4px 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .status-val { color: var(--amber); }
+
+  /* ── OCTAVE BTNS ── */
+  .oct-btns { display: flex; gap: 4px; }
+  .oct-btn {
+    padding: 4px 10px;
+    background: var(--panel-light);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    transition: all 0.1s;
+  }
+  .oct-btn:active { background: var(--red); border-color: var(--red-bright); }
+
+  /* ── PANIC BTN ── */
+  .panic-btn {
+    padding: 6px 14px;
+    background: linear-gradient(180deg, #3a0808 0%, #1a0404 100%);
+    border: 1px solid var(--red);
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--red-bright);
+    transition: all 0.1s;
+  }
+  .panic-btn:active {
+    background: var(--red);
+    box-shadow: 0 0 12px var(--red-bright);
+    color: white;
+  }
+
+  /* ── SECTIONS GRID ── */
+  .sections-top { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sections-mid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  /* Engraved lines */
+  .engraved {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 6px 0;
+  }
+
+  /* Screen / display */
+  .display {
+    background: #0a1208;
+    border: 1px solid #1a2a18;
+    border-radius: 3px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: #4aff60;
+    text-shadow: 0 0 8px #4aff60;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 32px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* Disabled state */
+  .synth-body.off .section,
+  .synth-body.off .keyboard-wrap { opacity: 0.3; pointer-events: none; }
+  .synth-body.off .section { filter: saturate(0.2); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="logo">ПОЛИ<span>ВОКС</span></div>
+    <div class="logo-sub">СИНТЕЗАТОР · ФОРМАНТНЫЙ ЗАВОД · 1982</div>
+  </div>
+  <div class="power-section">
+    <div class="power-btn" id="powerBtn" onclick="togglePower()">⏻</div>
+    <div class="power-label">ПИТАНИЕ</div>
+  </div>
+</div>
+
+<div class="synth-body off" id="synthBody">
+
+  <!-- DISPLAY -->
+  <div class="display" id="mainDisplay">
+    <span id="dispNote">-- --</span>
+    <span id="dispMode">ВЫКЛ</span>
+    <span id="dispFreq">0 Гц</span>
+  </div>
+
+  <!-- VCO 1 + VCO 2 -->
+  <div class="sections-top">
+
+    <!-- VCO 1 -->
+    <div class="section">
+      <div class="section-label">ГГ-1 <span class="ru">ГЕНЕРАТОР 1</span></div>
+      <div class="row">
+        <div class="col">
+          <div class="col-label">ФОРМА</div>
+          <div class="wave-select" id="osc1Wave">
+            <div class="wave-btn active" data-wave="sawtooth" onclick="setWave(1,'sawtooth',this)">
+              <svg viewBox="0 0 20 14"><polyline points="0,12 10,2 10,12 20,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="wave-btn" data-wave="square" onclick="setWave(1,'square',this)">
+              <svg viewBox="0 0 20 14"><polyline points="0,12 0,2 10,2 10,12 20,12 20,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="wave-btn" data-wave="triangle" onclick="setWave(1,'triangle',this)">
+              <svg viewBox="0 0 20 14"><polyline points="0,12 5,2 15,12 20,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="engraved"></div>
+      <div class="row">
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="osc1Tune" data-min="-24" data-max="24" data-val="0" data-param="osc1Tune">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="osc1TuneLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">СТРОЙ</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="osc1Fine" data-min="-50" data-max="50" data-val="0" data-param="osc1Fine">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="osc1FineLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">ДЕТЮН</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="osc1Pw" data-min="5" data-max="95" data-val="50" data-param="osc1Pw">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="osc1PwLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">ШИМ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VCO 2 -->
+    <div class="section">
+      <div class="section-label">ГГ-2 <span class="ru">ГЕНЕРАТОР 2</span></div>
+      <div class="row">
+        <div class="col">
+          <div class="col-label">ФОРМА</div>
+          <div class="wave-select" id="osc2Wave">
+            <div class="wave-btn active" data-wave="sawtooth" onclick="setWave(2,'sawtooth',this)">
+              <svg viewBox="0 0 20 14"><polyline points="0,12 10,2 10,12 20,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="wave-btn" data-wave="square" onclick="setWave(2,'square',this)">
+              <svg viewBox="0 0 20 14"><polyline points="0,12 0,2 10,2 10,12 20,12 20,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="wave-btn" data-wave="triangle" onclick="setWave(2,'triangle',this)">
+              <svg viewBox="0 0 20 14"><polyline points="0,12 5,2 15,12 20,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="engraved"></div>
+      <div class="row">
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="osc2Tune" data-min="-24" data-max="24" data-val="0" data-param="osc2Tune">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="osc2TuneLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">СТРОЙ</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="osc2Fine" data-min="-50" data-max="50" data-val="7" data-param="osc2Fine">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="osc2FineLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">ДЕТЮН</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="osc2Mix" data-min="0" data-max="100" data-val="70" data-param="osc2Mix">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="osc2MixLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">МИКС</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER + RING MOD -->
+  <div class="sections-top">
+
+    <!-- VCF -->
+    <div class="section">
+      <div class="section-label">ФНЧ <span class="ru">ФИЛЬТР</span></div>
+      <div class="row">
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container" id="filterCutoff" data-min="0" data-max="100" data-val="60" data-param="filterCutoff">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#c0392b" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#1e1510" stroke="#3a1010" stroke-width="1"/><line id="filterCutoffLine" x1="24" y1="24" x2="24" y2="8" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">ЧАСТОТА</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container" id="filterRes" data-min="0" data-max="100" data-val="30" data-param="filterRes">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#c0392b" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#1e1510" stroke="#3a1010" stroke-width="1"/><line id="filterResLine" x1="24" y1="24" x2="24" y2="8" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">РЕЗОНАНС</div>
+          </div>
+        </div>
+      </div>
+      <div class="engraved"></div>
+      <div class="row">
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="filterEnv" data-min="-100" data-max="100" data-val="40" data-param="filterEnv">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="filterEnvLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">ОГИБ</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="filterKbd" data-min="0" data-max="100" data-val="50" data-param="filterKbd">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="filterKbdLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">КЛ.СЛЕЖ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RING MOD + AMP -->
+    <div class="section">
+      <div class="section-label">КМ <span class="ru">КОЛЬЦЕВАЯ МОД</span></div>
+      <div class="row" style="justify-content:center; margin-bottom:8px">
+        <div class="ringmod-indicator" onclick="toggleRingMod()">
+          <div class="led" id="ringLed"></div>
+          <span style="font-size:9px;letter-spacing:1px">КОЛЬЦО</span>
+        </div>
+      </div>
+      <div class="engraved"></div>
+      <div class="section-label" style="margin-top:6px">УПО <span class="ru">УСИЛИТЕЛЬ</span></div>
+      <div class="row">
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container" id="ampVol" data-min="0" data-max="100" data-val="80" data-param="ampVol">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#d4850a" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#1a1408" stroke="#3a3010" stroke-width="1"/><line id="ampVolLine" x1="24" y1="24" x2="24" y2="8" stroke="#f39c12" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">ГРОМКОСТЬ</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="vu-meter">
+            <div class="vu-bar"><div class="vu-fill" id="vu1"></div></div>
+            <div class="vu-bar"><div class="vu-fill" id="vu2"></div></div>
+            <div class="vu-bar"><div class="vu-fill" id="vu3"></div></div>
+            <div class="vu-bar"><div class="vu-fill" id="vu4"></div></div>
+          </div>
+          <div class="col-label">УРОВЕНЬ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADSR + LFO -->
+  <div class="sections-top">
+
+    <!-- ADSR -->
+    <div class="section">
+      <div class="section-label">ОГИБ <span class="ru">ADSR</span></div>
+      <div class="row">
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="envA" data-min="0" data-max="100" data-val="5" data-param="envA">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="envALine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">A</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="envD" data-min="0" data-max="100" data-val="30" data-param="envD">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="envDLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">D</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="envS" data-min="0" data-max="100" data-val="60" data-param="envS">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="envSLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">S</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="envR" data-min="0" data-max="100" data-val="40" data-param="envR">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="envRLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">R</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LFO -->
+    <div class="section">
+      <div class="section-label">НЧГ <span class="ru">LFO</span></div>
+      <div class="row">
+        <div class="col">
+          <div class="col-label">ФОРМА</div>
+          <div class="wave-select" id="lfoWave" style="gap:3px">
+            <div class="wave-btn active" data-wave="sine" onclick="setLfoWave('sine',this)">
+              <svg viewBox="0 0 20 14"><path d="M0,7 Q5,0 10,7 Q15,14 20,7" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="wave-btn" data-wave="square" onclick="setLfoWave('square',this)">
+              <svg viewBox="0 0 20 14"><polyline points="0,12 0,2 10,2 10,12 20,12 20,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="wave-btn" data-wave="sawtooth" onclick="setLfoWave('sawtooth',this)">
+              <svg viewBox="0 0 20 14"><polyline points="0,12 10,2 10,12 20,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="engraved"></div>
+      <div class="row">
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="lfoRate" data-min="0" data-max="100" data-val="30" data-param="lfoRate">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="lfoRateLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">ЧАСТОТА</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="knob-wrap">
+            <div class="knob-container small" id="lfoDepth" data-min="0" data-max="100" data-val="20" data-param="lfoDepth">
+              <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="lfoDepthLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="col-label">ГЛУБИНА</div>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:6px; gap:6px; justify-content:center">
+        <div class="wave-btn" id="lfoToPitch" onclick="toggleLfoTarget('pitch')" style="width:auto;padding:3px 6px;font-size:8px;letter-spacing:1px">ВЧ</div>
+        <div class="wave-btn active" id="lfoToFilter" onclick="toggleLfoTarget('filter')" style="width:auto;padding:3px 6px;font-size:8px;letter-spacing:1px">ФЛТ</div>
+        <div class="wave-btn" id="lfoToAmp" onclick="toggleLfoTarget('amp')" style="width:auto;padding:3px 6px;font-size:8px;letter-spacing:1px">УПО</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARPEGGIATOR -->
+  <div class="section">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+      <div class="section-label" style="margin-bottom:0;border:none">АРП <span class="ru">АРПЕДЖИАТОР</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="ringmod-indicator" onclick="toggleArp()" style="padding:4px 8px">
+          <div class="led amber" id="arpLed"></div>
+          <span style="font-size:9px">ПУСК</span>
+        </div>
+        <div class="knob-wrap" style="flex-direction:row;align-items:center;gap:6px">
+          <div class="knob-container small" id="arpBpm" data-min="40" data-max="200" data-val="120" data-param="arpBpm">
+            <svg class="knob-svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1a1714" stroke="#5a5040" stroke-width="2"/><circle cx="24" cy="24" r="16" fill="#222018" stroke="#3a3028" stroke-width="1"/><line id="arpBpmLine" x1="24" y1="24" x2="24" y2="8" stroke="#e8d5b0" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="col-label">БПМ</div>
+        </div>
+      </div>
+    </div>
+    <div class="arp-grid" id="arpGrid"></div>
+    <div style="display:flex;gap:6px;margin-top:8px;justify-content:center">
+      <div class="wave-btn" id="arpModeUp" onclick="setArpMode('up',this)" style="width:auto;padding:3px 8px;font-size:8px" >↑ВВ</div>
+      <div class="wave-btn active" id="arpModeDown" onclick="setArpMode('down',this)" style="width:auto;padding:3px 8px;font-size:8px">↓НИ</div>
+      <div class="wave-btn" id="arpModeUD" onclick="setArpMode('updown',this)" style="width:auto;padding:3px 8px;font-size:8px">↕ЗИГ</div>
+      <div class="wave-btn" id="arpModeRnd" onclick="setArpMode('random',this)" style="width:auto;padding:3px 8px;font-size:8px">?СЛ</div>
+    </div>
+  </div>
+
+  <!-- KEYBOARD -->
+  <div class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="section-label" style="margin-bottom:0;border:none">КЛ <span class="ru">КЛАВИАТУРА</span></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div class="oct-btns">
+          <div class="oct-btn" onclick="shiftOctave(-1)">-ОКТ</div>
+          <div class="oct-btn" id="octDisplay">4</div>
+          <div class="oct-btn" onclick="shiftOctave(1)">+ОКТ</div>
+        </div>
+        <div class="panic-btn" onclick="panicAllNotes()">СТОП</div>
+      </div>
+    </div>
+    <div class="keyboard-wrap">
+      <div class="keyboard" id="keyboard"></div>
+    </div>
+  </div>
+
+</div><!-- /synth-body -->
+
+<div class="status-bar">
+  <span>НОТ: <span class="status-val" id="sbNote">--</span></span>
+  <span>ЧСТ: <span class="status-val" id="sbFreq">-- Гц</span></span>
+  <span>ОКТ: <span class="status-val" id="sbOct">4</span></span>
+  <span>РМ: <span class="status-val" id="sbRm">ВЫКЛ</span></span>
+  <span>АРП: <span class="status-val" id="sbArp">ВЫКЛ</span></span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// AUDIO ENGINE
+// ═══════════════════════════════════════════════════
+let ctx = null;
+let masterGain, reverbNode, filterNode;
+let osc1, osc2, ringModOsc, ringModGain;
+let lfoOsc, lfoGain;
+let ampEnvGain;
+let activeNotes = {};
+let powered = false;
+let currentOctave = 4;
+
+// Synth state
+const state = {
+  osc1Wave: 'sawtooth',
+  osc2Wave: 'sawtooth',
+  osc1Tune: 0, osc1Fine: 0, osc1Pw: 50,
+  osc2Tune: 0, osc2Fine: 7, osc2Mix: 70,
+  filterCutoff: 60, filterRes: 30,
+  filterEnv: 40, filterKbd: 50,
+  envA: 5, envD: 30, envS: 60, envR: 40,
+  lfoRate: 30, lfoDepth: 20,
+  lfoWave: 'sine',
+  lfoToPitch: false, lfoToFilter: true, lfoToAmp: false,
+  ampVol: 80,
+  ringMod: false,
+  arpOn: false, arpBpm: 120, arpMode: 'down',
+  arpSteps: Array(16).fill(false).map((_,i) => i < 8)
+};
+
+function noteToFreq(midi) {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+function paramToSeconds(val, min=0.001, max=3) {
+  return min + (val/100) * (max-min);
+}
+function paramToHz(val, min=20, max=20000) {
+  return min * Math.pow(max/min, val/100);
+}
+
+function initAudio() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = ctx.createGain();
+  masterGain.gain.value = 0.7;
+  masterGain.connect(ctx.destination);
+
+  // LFO
+  lfoOsc = ctx.createOscillator();
+  lfoGain = ctx.createGain();
+  lfoOsc.type = state.lfoWave;
+  lfoOsc.frequency.value = 2;
+  lfoGain.gain.value = 0;
+  lfoOsc.connect(lfoGain);
+  lfoOsc.start();
+
+  updateMasterVolume();
+}
+
+function playNote(midiNote) {
+  if (!ctx) return;
+  if (activeNotes[midiNote]) stopNote(midiNote);
+
+  const freq = noteToFreq(midiNote);
+  const now = ctx.currentTime;
+
+  // OSC 1
+  const o1 = ctx.createOscillator();
+  o1.type = state.osc1Wave;
+  const freq1 = freq * Math.pow(2, state.osc1Tune/12) * Math.pow(2, state.osc1Fine/1200);
+  o1.frequency.value = freq1;
+
+  // OSC 2
+  const o2 = ctx.createOscillator();
+  o2.type = state.osc2Wave;
+  const freq2 = freq * Math.pow(2, state.osc2Tune/12) * Math.pow(2, state.osc2Fine/1200);
+  o2.frequency.value = freq2;
+
+  // Mix
+  const mix1 = ctx.createGain();
+  const mix2 = ctx.createGain();
+  mix1.gain.value = 0.5;
+  mix2.gain.value = state.osc2Mix / 100 * 0.5;
+
+  // Ring mod
+  let ringIn;
+  if (state.ringMod) {
+    const rm = ctx.createOscillator();
+    rm.frequency.value = freq2;
+    const rmGain = ctx.createGain();
+    rmGain.gain.value = 1;
+    rm.connect(rmGain);
+
+    // Actual ring mod = multiply o1 * o2
+    const ringMixer = ctx.createGain();
+    ringMixer.gain.value = 0;
+    o1.connect(ringMixer.gain);
+    mix2.connect(ringMixer);
+    ringIn = ringMixer;
+    rm.start(now);
+
+    // Store for cleanup
+    activeNotes[midiNote] = activeNotes[midiNote] || {};
+    if (!activeNotes[midiNote]) activeNotes[midiNote] = {};
+    activeNotes[midiNote]._rm = rm;
+  }
+
+  // Filter
+  const flt = ctx.createBiquadFilter();
+  flt.type = 'lowpass';
+  const cutoffHz = paramToHz(state.filterCutoff);
+  flt.frequency.value = cutoffHz;
+  flt.Q.value = state.filterRes / 100 * 30;
+
+  // Amp envelope
+  const envGain = ctx.createGain();
+  envGain.gain.setValueAtTime(0, now);
+  const atk = paramToSeconds(state.envA, 0.002, 2);
+  const dec = paramToSeconds(state.envD, 0.01, 3);
+  const sus = state.envS / 100;
+  envGain.gain.linearRampToValueAtTime(1, now + atk);
+  envGain.gain.linearRampToValueAtTime(sus, now + atk + dec);
+
+  // Filter envelope
+  const filterEnvAmt = (state.filterEnv / 100) * 3; // octaves
+  flt.frequency.setValueAtTime(cutoffHz * 0.3, now);
+  flt.frequency.linearRampToValueAtTime(cutoffHz * (1 + filterEnvAmt), now + atk);
+  flt.frequency.linearRampToValueAtTime(cutoffHz, now + atk + dec);
+
+  // LFO routing
+  if (state.lfoToFilter) {
+    lfoGain.connect(flt.frequency);
+  }
+  if (state.lfoToAmp) {
+    lfoGain.connect(envGain.gain);
+  }
+  if (state.lfoToPitch) {
+    lfoGain.connect(o1.frequency);
+    lfoGain.connect(o2.frequency);
+  }
+
+  o1.connect(mix1);
+  o2.connect(mix2);
+  mix1.connect(flt);
+  mix2.connect(flt);
+  flt.connect(envGain);
+  envGain.connect(masterGain);
+
+  o1.start(now);
+  o2.start(now);
+
+  activeNotes[midiNote] = { o1, o2, envGain, flt, atk };
+  updateDisplay(midiNote, freq);
+  animateVU(true);
+}
+
+function stopNote(midiNote) {
+  if (!ctx) return;
+  const note = activeNotes[midiNote];
+  if (!note) return;
+  const now = ctx.currentTime;
+  const rel = paramToSeconds(state.envR, 0.01, 4);
+  note.envGain.gain.cancelScheduledValues(now);
+  note.envGain.gain.setValueAtTime(note.envGain.gain.value, now);
+  note.envGain.gain.linearRampToValueAtTime(0, now + rel);
+  note.o1.stop(now + rel + 0.05);
+  note.o2.stop(now + rel + 0.05);
+  if (note._rm) note._rm.stop(now + rel + 0.05);
+  delete activeNotes[midiNote];
+  if (Object.keys(activeNotes).length === 0) animateVU(false);
+}
+
+function panicAllNotes() {
+  Object.keys(activeNotes).forEach(n => stopNote(parseInt(n)));
+  activeNotes = {};
+  animateVU(false);
+}
+
+function updateMasterVolume() {
+  if (!masterGain) return;
+  masterGain.gain.value = state.ampVol / 100 * 0.9;
+}
+
+function updateLfo() {
+  if (!lfoOsc) return;
+  lfoOsc.type = state.lfoWave;
+  const rate = 0.1 + (state.lfoRate / 100) * 19.9;
+  lfoOsc.frequency.value = rate;
+  const depth = (state.lfoDepth / 100) * 800;
+  lfoGain.gain.value = depth;
+}
+
+// ═══════════════════════════════════════════════════
+// VU METER
+// ═══════════════════════════════════════════════════
+let vuAnimFrame = null;
+function animateVU(active) {
+  if (!active) {
+    ['vu1','vu2','vu3','vu4'].forEach(id => {
+      document.getElementById(id).style.height = '0%';
+    });
+    if (vuAnimFrame) cancelAnimationFrame(vuAnimFrame);
+    vuAnimFrame = null;
+    return;
+  }
+  function step() {
+    const base = 40 + Math.random() * 40;
+    ['vu1','vu2','vu3','vu4'].forEach((id, i) => {
+      const h = Math.max(5, base + (Math.random()-0.5)*30 - i*5);
+      document.getElementById(id).style.height = Math.min(100,h) + '%';
+    });
+    vuAnimFrame = requestAnimationFrame(step);
+  }
+  if (!vuAnimFrame) step();
+}
+
+// ═══════════════════════════════════════════════════
+// DISPLAY
+// ═══════════════════════════════════════════════════
+const noteNames = ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си'];
+function updateDisplay(midi, freq) {
+  const name = noteNames[midi % 12];
+  const oct = Math.floor(midi / 12) - 1;
+  const label = `${name}${oct}`;
+  document.getElementById('dispNote').textContent = label;
+  document.getElementById('dispFreq').textContent = `${freq.toFixed(1)} Гц`;
+  document.getElementById('sbNote').textContent = label;
+  document.getElementById('sbFreq').textContent = `${freq.toFixed(1)} Гц`;
+}
+
+// ═══════════════════════════════════════════════════
+// POWER
+// ═══════════════════════════════════════════════════
+function togglePower() {
+  powered = !powered;
+  const btn = document.getElementById('powerBtn');
+  const body = document.getElementById('synthBody');
+  if (powered) {
+    initAudio();
+    if (ctx.state === 'suspended') ctx.resume();
+    btn.classList.add('on');
+    body.classList.remove('off');
+    document.getElementById('dispMode').textContent = 'РАБ';
+    updateLfo();
+  } else {
+    panicAllNotes();
+    stopArp();
+    btn.classList.remove('on');
+    body.classList.add('off');
+    document.getElementById('dispMode').textContent = 'ВЫКЛ';
+    document.getElementById('dispNote').textContent = '-- --';
+    document.getElementById('dispFreq').textContent = '0 Гц';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// KNOB INTERACTION
+// ═══════════════════════════════════════════════════
+let activeKnob = null;
+let knobStartY = 0;
+let knobStartVal = 0;
+
+function getKnobAngle(val, min, max) {
+  const pct = (val - min) / (max - min);
+  const start = -140;
+  const end = 140;
+  return start + pct * (end - start);
+}
+
+function rotateKnobLine(el, angle) {
+  const line = el.querySelector('line');
+  if (!line) return;
+  const cx = 24, cy = 24;
+  const rad = (angle - 90) * Math.PI / 180;
+  const len = 16;
+  const x2 = cx + Math.cos(rad) * len;
+  const y2 = cy + Math.sin(rad) * len;
+  line.setAttribute('x2', x2.toFixed(2));
+  line.setAttribute('y2', y2.toFixed(2));
+}
+
+function initKnob(el) {
+  const min = parseFloat(el.dataset.min);
+  const max = parseFloat(el.dataset.max);
+  const val = parseFloat(el.dataset.val);
+  rotateKnobLine(el, getKnobAngle(val, min, max));
+
+  const onStart = (clientY) => {
+    if (!powered) return;
+    activeKnob = el;
+    knobStartY = clientY;
+    knobStartVal = parseFloat(el.dataset.val);
+  };
+  const onMove = (clientY) => {
+    if (activeKnob !== el) return;
+    const dy = knobStartY - clientY;
+    const range = max - min;
+    const newVal = Math.min(max, Math.max(min, knobStartVal + dy * range / 200));
+    el.dataset.val = newVal;
+    rotateKnobLine(el, getKnobAngle(newVal, min, max));
+    applyParam(el.dataset.param, newVal);
+  };
+
+  el.addEventListener('touchstart', e => { e.preventDefault(); onStart(e.touches[0].clientY); }, { passive: false });
+  el.addEventListener('mousedown', e => onStart(e.clientY));
+  document.addEventListener('touchmove', e => { if (activeKnob === el) { e.preventDefault(); onMove(e.touches[0].clientY); } }, { passive: false });
+  document.addEventListener('mousemove', e => { if (activeKnob === el) onMove(e.clientY); });
+  document.addEventListener('touchend', () => { if (activeKnob === el) activeKnob = null; });
+  document.addEventListener('mouseup', () => { if (activeKnob === el) activeKnob = null; });
+}
+
+function applyParam(param, val) {
+  state[param] = val;
+  switch(param) {
+    case 'ampVol': updateMasterVolume(); break;
+    case 'lfoRate': case 'lfoDepth': updateLfo(); break;
+    case 'filterCutoff':
+      Object.values(activeNotes).forEach(n => {
+        if (n.flt) n.flt.frequency.value = paramToHz(val);
+      }); break;
+    case 'filterRes':
+      Object.values(activeNotes).forEach(n => {
+        if (n.flt) n.flt.Q.value = val / 100 * 30;
+      }); break;
+    case 'arpBpm':
+      if (state.arpOn) restartArp(); break;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// WAVE SELECT
+// ═══════════════════════════════════════════════════
+function setWave(osc, wave, btn) {
+  if (!powered) return;
+  const container = document.getElementById(`osc${osc}Wave`);
+  container.querySelectorAll('.wave-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state[`osc${osc}Wave`] = wave;
+  Object.values(activeNotes).forEach(n => {
+    if (osc === 1 && n.o1) n.o1.type = wave;
+    if (osc === 2 && n.o2) n.o2.type = wave;
+  });
+}
+function setLfoWave(wave, btn) {
+  if (!powered) return;
+  document.getElementById('lfoWave').querySelectorAll('.wave-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.lfoWave = wave;
+  updateLfo();
+}
+
+// ═══════════════════════════════════════════════════
+// LFO TARGETS
+// ═══════════════════════════════════════════════════
+function toggleLfoTarget(target) {
+  if (!powered) return;
+  const key = `lfoTo${target.charAt(0).toUpperCase()+target.slice(1)}`;
+  state[key] = !state[key];
+  const btn = document.getElementById(`lfoTo${target.charAt(0).toUpperCase()+target.slice(1)}`);
+  btn.classList.toggle('active', state[key]);
+}
+
+// ═══════════════════════════════════════════════════
+// RING MOD
+// ═══════════════════════════════════════════════════
+function toggleRingMod() {
+  if (!powered) return;
+  state.ringMod = !state.ringMod;
+  document.getElementById('ringLed').classList.toggle('active', state.ringMod);
+  document.getElementById('sbRm').textContent = state.ringMod ? 'ВКЛ' : 'ВЫКЛ';
+}
+
+// ═══════════════════════════════════════════════════
+// KEYBOARD
+// ═══════════════════════════════════════════════════
+const whiteNotes = [0,2,4,5,7,9,11]; // C D E F G A B semitones
+const blackMap = { 0:1, 2:3, 4:-1, 5:6, 7:8, 9:10, 11:-1 }; // semitone -> black semitone or -1
+
+function buildKeyboard() {
+  const kb = document.getElementById('keyboard');
+  kb.innerHTML = '';
+  // 2 octaves
+  let whiteX = 0;
+  for (let oct = 0; oct < 2; oct++) {
+    for (let i = 0; i < 7; i++) {
+      const semi = whiteNotes[i];
+      const midiBase = (currentOctave + oct) * 12 + semi;
+
+      const wk = document.createElement('div');
+      wk.className = 'key-white';
+      wk.dataset.midi = midiBase;
+      if (semi === 0) {
+        const nm = document.createElement('div');
+        nm.className = 'note-name';
+        nm.textContent = 'С' + (currentOctave + oct);
+        wk.appendChild(nm);
+      }
+      wk.addEventListener('touchstart', e => { e.preventDefault(); noteOn(midiBase, wk); }, { passive: false });
+      wk.addEventListener('touchend', e => { e.preventDefault(); noteOff(midiBase, wk); });
+      wk.addEventListener('mousedown', () => noteOn(midiBase, wk));
+      wk.addEventListener('mouseup', () => noteOff(midiBase, wk));
+      wk.addEventListener('mouseleave', () => noteOff(midiBase, wk));
+      kb.appendChild(wk);
+
+      // Black key
+      const bSemi = blackMap[semi];
+      if (bSemi !== -1 && bSemi !== undefined) {
+        const bMidi = (currentOctave + oct) * 12 + bSemi;
+        const bk = document.createElement('div');
+        bk.className = 'key-black';
+        bk.dataset.midi = bMidi;
+        const offset = whiteX * 38 + 26;
+        bk.style.left = offset + 'px';
+        bk.addEventListener('touchstart', e => { e.preventDefault(); noteOn(bMidi, bk); }, { passive: false });
+        bk.addEventListener('touchend', e => { e.preventDefault(); noteOff(bMidi, bk); });
+        bk.addEventListener('mousedown', e => { e.stopPropagation(); noteOn(bMidi, bk); });
+        bk.addEventListener('mouseup', () => noteOff(bMidi, bk));
+        kb.appendChild(bk);
+      }
+      whiteX++;
+    }
+  }
+}
+
+function noteOn(midi, el) {
+  if (!powered) return;
+  el.classList.add('pressed');
+  playNote(midi);
+  if (state.arpOn) addArpNote(midi);
+}
+function noteOff(midi, el) {
+  el && el.classList.remove('pressed');
+  if (!state.arpOn) stopNote(midi);
+}
+
+function shiftOctave(dir) {
+  currentOctave = Math.max(1, Math.min(7, currentOctave + dir));
+  document.getElementById('octDisplay').textContent = currentOctave;
+  document.getElementById('sbOct').textContent = currentOctave;
+  buildKeyboard();
+}
+
+// ═══════════════════════════════════════════════════
+// ARPEGGIATOR
+// ═══════════════════════════════════════════════════
+let arpInterval = null;
+let arpStep = 0;
+let arpNotes = [];
+let arpDirUp = true;
+
+function buildArpGrid() {
+  const grid = document.getElementById('arpGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 16; i++) {
+    const step = document.createElement('div');
+    step.className = 'arp-step' + (state.arpSteps[i] ? ' active' : '');
+    step.dataset.idx = i;
+    const num = document.createElement('div');
+    num.className = 'arp-step-num';
+    num.textContent = i + 1;
+    step.appendChild(num);
+    step.addEventListener('click', () => toggleArpStep(i, step));
+    grid.appendChild(step);
+  }
+}
+
+function toggleArpStep(idx, el) {
+  state.arpSteps[idx] = !state.arpSteps[idx];
+  el.classList.toggle('active', state.arpSteps[idx]);
+}
+
+function toggleArp() {
+  if (!powered) return;
+  state.arpOn = !state.arpOn;
+  document.getElementById('arpLed').classList.toggle('active', state.arpOn);
+  document.getElementById('sbArp').textContent = state.arpOn ? 'ВКЛ' : 'ВЫКЛ';
+  if (state.arpOn) startArp(); else stopArp();
+}
+
+// Default arp notes across 2 octaves based on C minor pentatonic
+const arpDefaultNotes = [48,51,53,55,58,60,63,65];
+
+function startArp() {
+  arpNotes = [...arpDefaultNotes];
+  arpStep = 0;
+  const bpm = parseInt(state.arpBpm) || 120;
+  const interval = 60000 / bpm / 2;
+  arpInterval = setInterval(tickArp, interval);
+}
+
+function stopArp() {
+  if (arpInterval) { clearInterval(arpInterval); arpInterval = null; }
+  panicAllNotes();
+}
+
+function restartArp() {
+  stopArp();
+  if (state.arpOn) startArp();
+}
+
+function addArpNote(midi) {
+  if (!arpNotes.includes(midi)) arpNotes.push(midi);
+}
+
+function tickArp() {
+  if (!arpNotes.length) return;
+  const activeSteps = state.arpSteps.filter(Boolean).length || 8;
+  const noteCount = arpNotes.length;
+
+  // Highlight step
+  document.querySelectorAll('.arp-step').forEach((el, i) => el.classList.remove('playing'));
+  const stepIdx = arpStep % 16;
+  const stepEl = document.querySelector(`.arp-step[data-idx="${stepIdx}"]`);
+  if (stepEl) stepEl.classList.add('playing');
+
+  if (state.arpSteps[stepIdx]) {
+    let noteIdx;
+    switch (state.arpMode) {
+      case 'up': noteIdx = arpStep % noteCount; break;
+      case 'down': noteIdx = noteCount - 1 - (arpStep % noteCount); break;
+      case 'updown':
+        const totalSteps = noteCount * 2 - 2;
+        const pos = arpStep % Math.max(1, totalSteps);
+        noteIdx = pos < noteCount ? pos : totalSteps - pos;
+        break;
+      case 'random': noteIdx = Math.floor(Math.random() * noteCount); break;
+      default: noteIdx = arpStep % noteCount;
+    }
+    const midi = arpNotes[Math.max(0, Math.min(noteIdx, noteCount-1))];
+    panicAllNotes();
+    playNote(midi);
+  }
+
+  arpStep = (arpStep + 1) % 16;
+}
+
+function setArpMode(mode, btn) {
+  state.arpMode = mode;
+  document.querySelectorAll('[id^="arpMode"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+document.querySelectorAll('.knob-container').forEach(initKnob);
+buildKeyboard();
+buildArpGrid();
+</script>
+</body>
+</html>
